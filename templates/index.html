@@ -13,6 +13,18 @@
 <h2>Reports</h2>
 <a href=# >Simple data from SQLITE</a>  <br/>
 
+
+  <ul class=entries>
+  {% for entry in entries %}
+    <li>{{ entry[0] }}
+  {% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+  </ul>
+
 {% endblock %}
 
 {{ text_message }}
+
+
+
