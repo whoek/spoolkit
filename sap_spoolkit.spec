@@ -2,7 +2,6 @@
 
 block_cipher = None
 
-
 a = Analysis(['sap_spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],
              binaries=[],
