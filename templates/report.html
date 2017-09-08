@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+
+<h2>Report details</h2>
+
+<h2>uid</h2>
+{{ uid }} 
+<br>
+<h2>Name</h2>
+{{ report.name }}  
+<br>
+<h2>pre_script_sql</h2>
+{{ report.pre_script_sql }} 
+<br>
+<h2>report_sql</h2>
+{{ report.report_sql  }} 
+<br>
+
+
+{{ report.post_script_sql }}
+  
+{% endblock %}
+
+{{ text_message }}
+
+
+

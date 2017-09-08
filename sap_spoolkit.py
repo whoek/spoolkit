@@ -11,13 +11,12 @@ import os
 import sys
 import sqlite3
 
+# keep copy of application path and change working directory to EXE
 # abspath => directory you run the EXE from
 # sys.path => user\temp directory _MAIPASS
-
-# keep this on top 
 APP_PATH = os.path.abspath(".")          # application path     
 
-# change working directory to _MEIPASS for single EXE
+
 if hasattr(sys, '_MEIPASS'):
     os.chdir(sys._MEIPASS)                 # change current working directory
 
@@ -31,6 +30,45 @@ app.config.update(dict(
     USERNAME='admin',
     PASSWORD='default'
 ))
+
+import sqlite3
+
+def init_db():
+    try:
+        conn = sqlite3.connect('C:\\data\\bitbucket\\spoolkit\\sap_spoolkit.db')
+        c = conn.cursor()
+        c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name in ('configuration', 'reports')")
+        count = c.fetchone()#[0]
+        conn.close()
+        if count[0] == 2:  # tables are there!!!
+            return 0       # key tables found -- all OK
+        else:
+            raise Error
+    except:
+        return run_script('schema.sql')
+    
+def run_script(script_name):
+    try:
+        # read script
+        fd = open('C:\\data\\bitbucket\\spoolkit\\sql\\' + script_name, 'r')
+        script = fd.read()
+        fd.close()
+    except:
+        return 1
+    try:
+        conn = sqlite3.connect('C:\\data\\bitbucket\\spoolkit\\sap_spoolkit.db')
+        c = conn.cursor()
+        c.executescript(script)
+        conn.commit()
+        conn.close()
+    except:
+        return 2
+    return 0
+
+init_db()
+#print run_script('schema.sql')
+
+
 
 # database usage
 def connect_db():
@@ -53,7 +91,6 @@ def get_db():
         g.sqlite_db = connect_db()
     return g.sqlite_db
 
-
 def query_db(query, args=(), one=False):
     cur = get_db().executescript(query, args)
     rv = cur.fetchall()
@@ -63,27 +100,30 @@ def query_db(query, args=(), one=False):
 @app.route("/")
 def hello():
     db = get_db()
-    c = db.execute('select date();')
-    entries = c.fetchall()
+    c = db.execute('select * from reports')
+    reports = c.fetchall()
     display_text = time.ctime()
     return render_template('index.html',
             display_text = display_text,
-            entries = entries)
+            reports = reports)
 
+
+
+@app.route("/r/<uid>")
+def view_report(uid):
+    db = get_db()
+    c = db.execute('select * from reports where "uid" = uid')
+    report = c.fetchone()
+    display_text = uid  #time.ctime()
+    return render_template('report.html',
+            display_text = display_text,
+            report = report)
 
 # ============================================================================
 #
 # MAIN APPLICATION
 #
 # ============================================================================
-
-# Open and read the file as a single buffer
-#@app.before_first_request
-#def load_schema():
-#    fd = open('sql/schema.sql', 'r')
-#    sqlFile = fd.read()
-#    query_db(sqlFile)
-#    fd.close()
 
 # open up browser
 import webbrowser
