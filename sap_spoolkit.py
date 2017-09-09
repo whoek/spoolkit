@@ -28,14 +28,15 @@ app.config.update(dict(
     DATABASE=os.path.join(APP_PATH, 'sap_spoolkit.db'),
     SECRET_KEY='development key',
     USERNAME='admin',
-    PASSWORD='default'
+    PASSWORD='default',
+    APP_PATH = APP_PATH,
+    CWD_PATH = os.getcwd()
 ))
-
-import sqlite3
 
 def init_db():
     try:
-        conn = sqlite3.connect('C:\\data\\bitbucket\\spoolkit\\sap_spoolkit.db')
+        conn = sqlite3.connect(app.config['DATABASE'])
+        print 'init db.....', app.config['DATABASE']
         c = conn.cursor()
         c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name in ('configuration', 'reports')")
         count = c.fetchone()#[0]
@@ -50,13 +51,15 @@ def init_db():
 def run_script(script_name):
     try:
         # read script
-        fd = open('C:\\data\\bitbucket\\spoolkit\\sql\\' + script_name, 'r')
+        script_file = os.path.join(app.config['CWD_PATH'],'sql', script_name)
+        print 'script file: ', script_file
+        fd = open(script_file, 'r')
         script = fd.read()
         fd.close()
     except:
         return 1
     try:
-        conn = sqlite3.connect('C:\\data\\bitbucket\\spoolkit\\sap_spoolkit.db')
+        conn = sqlite3.connect(app.config['DATABASE'])
         c = conn.cursor()
         c.executescript(script)
         conn.commit()
@@ -65,31 +68,23 @@ def run_script(script_name):
         return 2
     return 0
 
-init_db()
 #print run_script('schema.sql')
 
 
 
 # database usage
-def connect_db():
-    """Connects to the specific database."""
-    rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
-    return rv
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(app.config['DATABASE'])
+        db.row_factory = sqlite3.Row
+    return db
 
 @app.teardown_appcontext
-def close_db(error):
-    """Closes the database again at the end of the request."""
-    if hasattr(g, 'sqlite_db'):
-        g.sqlite_db.close()
-
-def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = connect_db()
-    return g.sqlite_db
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 def query_db(query, args=(), one=False):
     cur = get_db().executescript(query, args)
@@ -98,7 +93,7 @@ def query_db(query, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 @app.route("/")
-def hello():
+def root():
     db = get_db()
     c = db.execute('select * from reports')
     reports = c.fetchall()
@@ -112,18 +107,21 @@ def hello():
 @app.route("/r/<uid>")
 def view_report(uid):
     db = get_db()
-    c = db.execute('select * from reports where "uid" = uid')
+    sql = ('select * from reports where uid = %s' % uid)
+    c = db.execute(sql)
     report = c.fetchone()
-    display_text = uid  #time.ctime()
+    display_text = time.ctime()
     return render_template('report.html',
             display_text = display_text,
-            report = report)
+            report = report )
 
 # ============================================================================
 #
 # MAIN APPLICATION
 #
 # ============================================================================
+
+init_db()
 
 # open up browser
 import webbrowser

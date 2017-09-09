@@ -6,7 +6,8 @@ a = Analysis(['sap_spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],
              binaries=[],
              datas=[
-                ( 'C:\\data\\bitbucket\\spoolkit\\templates\\*.html', 'templates' )
+                ( 'C:\\data\\bitbucket\\spoolkit\\templates\\*.html', 'templates' ),
+                ( 'C:\\data\\bitbucket\\spoolkit\\sql\\*.sql', 'sql' )
              ],
              hiddenimports=[],
              hookspath=[],
