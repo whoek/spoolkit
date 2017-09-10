@@ -33,7 +33,7 @@ app.config.update(dict(
 def init_db():
     try:
         conn = sqlite3.connect(app.config['DATABASE'])
-        print 'init db.....', app.config['DATABASE']
+#        print 'init db.....', app.config['DATABASE']
         c = conn.cursor()
         c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name in ('configuration', 'reports')")
         count = c.fetchone()#[0]
@@ -49,7 +49,7 @@ def run_script(script_name):
     try:
         # read script
         script_file = os.path.join(app.config['CWD_PATH'],'sql', script_name)
-        print 'script file: ', script_file
+#        print 'script file: ', script_file
         fd = open(script_file, 'r')
         script = fd.read()
         fd.close()
@@ -64,8 +64,6 @@ def run_script(script_name):
     except:
         return 2
     return 0
-
-#print run_script('schema.sql')
 
 # database usage
 def get_db():
@@ -103,9 +101,11 @@ def view_report(uid):
     sql = ('select * from reports where uid = %s' % uid)
     c = db.execute(sql)
     report = c.fetchone()
+    sql_result =     db.execute(report['report_sql'] + '') 
     display_text = time.ctime()
     return render_template('report.html',
             display_text = display_text,
+            sql_result = sql_result,
             report = report )
 
 # ============================================================================

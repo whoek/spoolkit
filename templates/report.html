@@ -9,6 +9,13 @@
 <h3>report_sql</h3>
 {{ report.report_sql  }}
 
+<h3>The sql result</h3>
+{% for row in sql_result %}
+    {% for field  in row %}
+        {{ field }} 
+    {% endfor %}
+{% endfor %}
+
 
 <br>
 <h3>post_script_sql</h3>
