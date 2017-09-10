@@ -1,9 +1,7 @@
 """
 
-SpoolKit
-Willem Hoek
-2017 @ Matimba Ventures Pty Ltd
-
+    Spoolkit
+    :copyright: (c) 2017 by Willem Hoek.
 """
 from flask import Flask, render_template, g
 import time
@@ -15,7 +13,6 @@ import sqlite3
 # abspath => directory you run the EXE from
 # sys.path => user\temp directory _MAIPASS
 APP_PATH = os.path.abspath(".")          # application path     
-
 
 if hasattr(sys, '_MEIPASS'):
     os.chdir(sys._MEIPASS)                 # change current working directory
@@ -70,8 +67,6 @@ def run_script(script_name):
 
 #print run_script('schema.sql')
 
-
-
 # database usage
 def get_db():
     db = getattr(g, '_database', None)
@@ -102,9 +97,7 @@ def root():
             display_text = display_text,
             reports = reports)
 
-
-
-@app.route("/r/<uid>")
+@app.route("/r/<int:uid>")
 def view_report(uid):
     db = get_db()
     sql = ('select * from reports where uid = %s' % uid)
@@ -129,6 +122,6 @@ webbrowser.open('http://localhost:9090/', new = 2)
 
 # Run DEV server
 if __name__ == "__main__":
-    app.run(port=9090, host='127.0.0.1', debug=True, use_reloader=False)
+    app.run(port=9090, host='0.0.0.0', debug=True, use_reloader=False)
     
 

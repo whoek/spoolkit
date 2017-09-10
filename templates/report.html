@@ -1,23 +1,17 @@
 {% extends "layout.html" %}
 
 {% block body %}
-
-
-<h2>Report details</h2>
-
-<h2>uid</h2>
-{{ uid }} 
+<h2>{{ report.uid }} - {{ report.name }}</h2>
 <br>
-<h2>Name</h2>
-{{ report.name }}  
-<br>
-<h2>pre_script_sql</h2>
+<h3>pre_script_sql</h3>
 {{ report.pre_script_sql }} 
 <br>
-<h2>report_sql</h2>
-{{ report.report_sql  }} 
-<br>
+<h3>report_sql</h3>
+{{ report.report_sql  }}
 
+
+<br>
+<h3>post_script_sql</h3>
 
 {{ report.post_script_sql }}
   
