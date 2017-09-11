@@ -95,6 +95,14 @@ def root():
     return render_template('index.html',
             reports = reports)
 
+@app.route("/a/r/<int:id>")
+def config_report(id):
+    db = get_db()
+    sql = ('select * from spoolkit_reports where id = %s' % id)
+    c = db.execute(sql)
+    report = c.fetchone()
+    return render_template('report_admin.html',
+            report = report )
 
 
 @app.route("/r/<int:id>")
