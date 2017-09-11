@@ -1,27 +1,24 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<h2>{{ report.uid }} - {{ report.name }}</h2>
-<br>
+<h2>{{ report.id }} - {{ report.name }}</h2>
+
 <h3>pre_script_sql</h3>
-{{ report.pre_script_sql }} 
-<br>
+{{ report.pre_script }} 
+
 <h3>report_sql</h3>
-{{ report.report_sql  }}
+{{ report.body_script  }}
 
 <h3>The sql result</h3>
 {% for row in sql_result %}
     {% for field  in row %}
         {{ field }} 
     {% endfor %}
-{% endfor %}
+{% endfor %}  
 
+<h3>post_script</h3>
+{{ report.post_script }}
 
-<br>
-<h3>post_script_sql</h3>
-
-{{ report.post_script_sql }}
-  
 {% endblock %}
 
 {{ text_message }}

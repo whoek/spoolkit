@@ -35,10 +35,11 @@ def init_db():
         conn = sqlite3.connect(app.config['DATABASE'])
 #        print 'init db.....', app.config['DATABASE']
         c = conn.cursor()
-        c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name in ('configuration', 'reports')")
+        c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name like 'spoolkit_%'")
         count = c.fetchone()#[0]
         conn.close()
-        if count[0] == 2:  # tables are there!!!
+        print 'admin tables ',count[0]
+        if count[0] > 6:  # should have 7 !!!
             return 0       # key tables found -- all OK
         else:
             raise Error
@@ -69,6 +70,7 @@ def run_script(script_name):
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
+        print 'db_path = ',app.config['DATABASE']
         db = g._database = sqlite3.connect(app.config['DATABASE'])
         db.row_factory = sqlite3.Row
     return db
@@ -88,20 +90,20 @@ def query_db(query, args=(), one=False):
 @app.route("/")
 def root():
     db = get_db()
-    c = db.execute('select * from reports')
+    c = db.execute('select * from spoolkit_reports')
     reports = c.fetchall()
     display_text = time.ctime()
     return render_template('index.html',
             display_text = display_text,
             reports = reports)
 
-@app.route("/r/<int:uid>")
-def view_report(uid):
+@app.route("/r/<int:id>")
+def view_report(id):
     db = get_db()
-    sql = ('select * from reports where uid = %s' % uid)
+    sql = ('select * from spoolkit_reports where id = %s' % id)
     c = db.execute(sql)
     report = c.fetchone()
-    sql_result =     db.execute(report['report_sql'] + '') 
+    sql_result = db.execute(report['body_script']) 
     display_text = time.ctime()
     return render_template('report.html',
             display_text = display_text,
@@ -124,4 +126,3 @@ webbrowser.open('http://localhost:9090/', new = 2)
 if __name__ == "__main__":
     app.run(port=9090, host='0.0.0.0', debug=True, use_reloader=False)
     
-
