@@ -74,9 +74,13 @@ drop table if exists spoolkit_connections;
 create table spoolkit_connections(
   id integer primary key autoincrement,
   active boolean
-  conn_name text,
-  conn_type text,
-  connstring text
+  name text,
+  driver text,
+  host text,
+  port integer,
+  database text,
+  username text,
+  password text
 );
 
 
@@ -96,3 +100,24 @@ insert into spoolkit_reports
 (name, body_script)
 values ('List of sap_files','select * from spoolkit_sapfiles');
 
+/*
+
+Configurations:
+
+Allow download -- Y/N
+Table max rows -- 5000
+SMTP from -- string
+SMTP host -- string
+
+*/
+
+-- SQLPad   works with node.js 
+-- Re:dash  hosted 
+-- Metabase, or Caravel.
+
+     -- NAME
+-- Settings
+-- Help
+-- About Spoolkit
+-------
+-- Logout

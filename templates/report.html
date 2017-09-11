@@ -10,18 +10,20 @@
 {{ report.body_script  }}
 
 <h3>The sql result</h3>
+<table border="1">
 {% for row in sql_result %}
+<tr>
     {% for field  in row %}
-        {{ field }} 
+        <td>{{ field }}</td> 
     {% endfor %}
+</tr>
 {% endfor %}  
+</table>
+</table>
+
+
 
 <h3>post_script</h3>
 {{ report.post_script }}
 
 {% endblock %}
-
-{{ text_message }}
-
-
-

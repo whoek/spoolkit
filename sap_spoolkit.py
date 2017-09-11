@@ -70,7 +70,7 @@ def run_script(script_name):
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        print 'db_path = ',app.config['DATABASE']
+#        print 'db_path = ',app.config['DATABASE']
         db = g._database = sqlite3.connect(app.config['DATABASE'])
         db.row_factory = sqlite3.Row
     return db
@@ -92,10 +92,10 @@ def root():
     db = get_db()
     c = db.execute('select * from spoolkit_reports')
     reports = c.fetchall()
-    display_text = time.ctime()
     return render_template('index.html',
-            display_text = display_text,
             reports = reports)
+
+
 
 @app.route("/r/<int:id>")
 def view_report(id):
@@ -104,11 +104,13 @@ def view_report(id):
     c = db.execute(sql)
     report = c.fetchone()
     sql_result = db.execute(report['body_script']) 
-    display_text = time.ctime()
     return render_template('report.html',
-            display_text = display_text,
             sql_result = sql_result,
             report = report )
+
+@app.context_processor
+def inject_now():
+    return {'now': time.ctime() }
 
 # ============================================================================
 #
