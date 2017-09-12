@@ -115,9 +115,3 @@ SMTP host -- string
 -- Re:dash  hosted 
 -- Metabase, or Caravel.
 
-     -- NAME
--- Settings
--- Help
--- About Spoolkit
--------
--- Logout

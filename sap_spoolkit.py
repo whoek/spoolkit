@@ -3,7 +3,7 @@
     Spoolkit
     :copyright: (c) 2017 by Willem Hoek.
 """
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request
 import time
 import os
 import sys
@@ -12,6 +12,7 @@ import sqlite3
 # keep copy of application path and change working directory to EXE
 # abspath => directory you run the EXE from
 # sys.path => user\temp directory _MAIPASS
+# C:\Users\hoekwi\AppData\Local\Temp
 APP_PATH = os.path.abspath(".")          # application path     
 
 if hasattr(sys, '_MEIPASS'):
@@ -119,6 +120,19 @@ def view_report(id):
 @app.context_processor
 def inject_now():
     return {'now': time.ctime() }
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
+@app.route('/shutdown', methods=['GET'])   # GET = link,  POST = button
+def shutdown():
+    shutdown_server()
+    return '''<br><br><br><br><h1>Thank you for using Spoolkit<br>
+ Program shutting down... </h2><br>
+        '''
 
 # ============================================================================
 #

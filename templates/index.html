@@ -7,10 +7,18 @@
 <a href=#>Config Reports</a>  <br/>
 <a href=#>Users</a>  <br/>
 
+<a href=#>Settings</a>  <br/>
+<a href=#>Help</a>  <br/>
+<a href=#>About Spoolkit</a>  <br/>
+------------- <br>
+<a href=/shutdown>Close application</a>  <br/>
+
 <h2>Reports</h2>
 
   {% for report in reports %}
-  {{ report.id }} --->  <a href=/r/{{ report.id }}>{{ report.name }}</a>  <br>
+  {{ report.id }} --->  <a href=/r/{{ report.id }}>{{ report.name }}</a> 
+  
+  <br>
   {% else %}
     <em>Unbelievable.  No entries here so far</em>
   {% endfor %}
