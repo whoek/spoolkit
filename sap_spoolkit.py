@@ -9,10 +9,11 @@ import os
 import sys
 import sqlite3
 
-# keep copy of application path and change working directory to EXE
-# abspath => directory you run the EXE from
-# sys.path => user\temp directory _MAIPASS
-# C:\Users\hoekwi\AppData\Local\Temp
+# used by flask-admin
+from flask_admin import Admin, BaseView, expose
+
+#from flask_sqlalchemy import SQLAlchemy
+
 APP_PATH = os.path.abspath(".")          # application path     
 
 if hasattr(sys, '_MEIPASS'):
@@ -96,14 +97,6 @@ def root():
     return render_template('index.html',
             reports = reports)
 
-@app.route("/a/r/<int:id>")
-def config_report(id):
-    db = get_db()
-    sql = ('select * from spoolkit_reports where id = %s' % id)
-    c = db.execute(sql)
-    report = c.fetchone()
-    return render_template('report_admin.html',
-            report = report )
 
 
 @app.route("/r/<int:id>")
@@ -134,8 +127,6 @@ def shutdown():
  Program shutting down... </h2><br>
         '''
 
-
-
 # ============================================================================
 #
 # MAIN APPLICATION
@@ -143,6 +134,28 @@ def shutdown():
 # ============================================================================
 
 init_db()
+
+# flask-admin
+class FileView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('demo.html')
+
+
+admin = Admin(app, name='Spoolkit', template_mode='bootstrap3')
+admin.add_view(FileView(name='Load', endpoint='fileload', category='Files'))
+admin.add_view(FileView(name='Setup', endpoint='filesetup', category='Files'))
+
+admin.add_view(FileView(name='Setup', endpoint='reportsetup', category='Reports'))
+admin.add_view(FileView(name='Stats', endpoint='reportstats', category='Reports'))
+admin.add_view(FileView(name='Cache', endpoint='reportcache', category='Reports'))
+
+admin.add_view(FileView(name='Settings', endpoint='appsettings', category='App'))
+admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'))
+admin.add_view(FileView(name='Help', endpoint='help', category='App'))
+admin.add_view(FileView(name='Close', endpoint='close', category='App'))
+
+
 
 # open up browser
 import webbrowser
