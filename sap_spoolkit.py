@@ -11,8 +11,14 @@ import sqlite3
 
 # used by flask-admin
 from flask_admin import Admin, BaseView, expose
+from flask_sqlalchemy import SQLAlchemy
+from flask_admin.contrib.sqla import ModelView
+from flask_admin.contrib import sqla
 
-#from flask_sqlalchemy import SQLAlchemy
+#from sqlalchemy import Column, ForeignKey, Integer, String
+#from sqlalchemy.ext.declarative import declarative_base
+#from sqlalchemy.orm import relationship
+#from sqlalchemy import create_engine
 
 APP_PATH = os.path.abspath(".")          # application path     
 
@@ -20,59 +26,23 @@ if hasattr(sys, '_MEIPASS'):
     os.chdir(sys._MEIPASS)                 # change current working directory
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'F34TF$($e34D';
-
-# Load default config and override config from an environment variable
 app.config.update(dict(
     DATABASE=os.path.join(APP_PATH, 'sap_spoolkit.db'),
-    SECRET_KEY='development key',
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(APP_PATH, 'sap_spoolkit.db'),
+    SQLALCHEMY_TRACK_MODIFICATIONS= True,
+    SECRET_KEY='F34TF$($e34Q',
     USERNAME='admin',
     PASSWORD='default',
     APP_PATH = APP_PATH,
-    CWD_PATH = os.getcwd()
+    CWD_PATH = os.getcwd(),
 ))
 
-def init_db():
-    try:
-        conn = sqlite3.connect(app.config['DATABASE'])
-#        print 'init db.....', app.config['DATABASE']
-        c = conn.cursor()
-        c.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name like 'spoolkit_%'")
-        count = c.fetchone()#[0]
-        conn.close()
-        print 'admin tables ',count[0]
-        if count[0] > 6:  # should have 7 !!!
-            return 0       # key tables found -- all OK
-        else:
-            raise Error
-    except:
-        return run_script('schema.sql')
-    
-def run_script(script_name):
-    try:
-        # read script
-        script_file = os.path.join(app.config['CWD_PATH'],'sql', script_name)
-#        print 'script file: ', script_file
-        fd = open(script_file, 'r')
-        script = fd.read()
-        fd.close()
-    except:
-        return 1
-    try:
-        conn = sqlite3.connect(app.config['DATABASE'])
-        c = conn.cursor()
-        c.executescript(script)
-        conn.commit()
-        conn.close()
-    except:
-        return 2
-    return 0
+db = SQLAlchemy(app)   # used by flask-admin 
 
 # database usage
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-#        print 'db_path = ',app.config['DATABASE']
         db = g._database = sqlite3.connect(app.config['DATABASE'])
         db.row_factory = sqlite3.Row
     return db
@@ -96,7 +66,6 @@ def root():
     reports = c.fetchall()
     return render_template('index.html',
             reports = reports)
-
 
 
 @app.route("/r/<int:id>")
@@ -133,29 +102,147 @@ def shutdown():
 #
 # ============================================================================
 
-init_db()
+# init_db()
 
+############################################################################
+# SQLAlchemy
+############################################################################
+
+class SpoolkitConfiguration(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.Text)
+    value = db.Column(db.Text)
+
+    def __init__(self, key):
+        self.key = key
+
+    def __repr__(self):
+        return '<Key %r>' % self.key
+
+
+class SpoolkitReportgroups(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+
+class SpoolkitReports(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean)
+    name = db.Column(db.Text)
+    shortcode = db.Column(db.Text)
+    report_group = db.Column(db.Text)
+    connection = db.Column(db.Text)
+    pre_script = db.Column(db.Text)
+    body_script = db.Column(db.Text)
+    post_script = db.Column(db.Text)
+
+    def __init__(self, name, body_script):
+        self.name = name
+        self.body_script = body_script
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+
+
+
+class SpoolkitUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    password = db.Column(db.Text)
+    last_login = db.Column(db.DateTime)
+    is_superuser = db.Column(db.Boolean) 
+    username = db.Column(db.Text)
+    first_name = db.Column(db.Text)
+    last_name = db.Column(db.Text)
+    email = db.Column(db.Text)
+    is_staff = db.Column(db.Boolean)
+    is_active = db.Column(db.Boolean)  
+    date_joine = db.Column(db.DateTime)
+    
+    def __init__(self, username):
+        self.username = username
+
+    def __repr__(self):
+        return '<Username %r>' % self.username
+
+class SpoolkitAuthUserPermissioins(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    group_id = db.Column(db.Integer)
+
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def __repr__(self):
+        return '<Userid %r>' % self.user_id
+
+class SpoolkitSapfiles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    keyword = db.Column(db.Text)
+    header_field = db.Column(db.Text)
+    table_name = db.Column(db.Text)
+    pre_script = db.Column(db.Text)
+    post_script = db.Column(db.Text)
+
+    def __init__(self, header_field):
+        self.header_field = header_field
+
+    def __repr__(self):
+        return '<Header  %r>' % self.header_field
+
+class SpoolkitConnections(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    active = db.Column(db.Boolean)
+    name = db.Column(db.Text)
+    driver = db.Column(db.Text)
+    host = db.Column(db.Text)
+    port = db.Column(db.Integer)
+    database = db.Column(db.Text)
+    username = db.Column(db.Text)
+    password = db.Column(db.Text)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+db.create_all()
+
+# Add some entries
+
+rec1 = SpoolkitReports(name= 'Show date', body_script = 'select date()')
+rec2 = SpoolkitReports(name= 'Show list of reports', body_script = 'select * from spoolkit_reports')
+rec3 = SpoolkitReports(name= 'List of sap_files', body_script = 'select * from spoolkit_sapfiles')
+db.session.add_all([rec1, rec2, rec3])
+db.session.commit()
+
+############################################################################
 # flask-admin
+############################################################################
+
 class FileView(BaseView):
     @expose('/')
     def index(self):
         return self.render('demo.html')
 
-
 admin = Admin(app, name='Spoolkit', template_mode='bootstrap3')
+
 admin.add_view(FileView(name='Load', endpoint='fileload', category='Files'))
 admin.add_view(FileView(name='Setup', endpoint='filesetup', category='Files'))
-
 admin.add_view(FileView(name='Setup', endpoint='reportsetup', category='Reports'))
 admin.add_view(FileView(name='Stats', endpoint='reportstats', category='Reports'))
 admin.add_view(FileView(name='Cache', endpoint='reportcache', category='Reports'))
-
 admin.add_view(FileView(name='Settings', endpoint='appsettings', category='App'))
 admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'))
 admin.add_view(FileView(name='Help', endpoint='help', category='App'))
 admin.add_view(FileView(name='Close', endpoint='close', category='App'))
-
-
 
 # open up browser
 import webbrowser
