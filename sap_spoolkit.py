@@ -12,8 +12,8 @@ import sqlite3
 # used by flask-admin
 from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
-#from flask_admin.contrib.sqla import ModelView
-from flask_admin.contrib import sqla
+from flask_admin.contrib.sqla import ModelView
+#from flask_admin.contrib import sqla
 
 #from sqlalchemy import Column, ForeignKey, Integer, String
 #from sqlalchemy.ext.declarative import declarative_base
@@ -105,23 +105,15 @@ class SpoolkitConfiguration(db.Model):
     key = db.Column(db.Text)
     value = db.Column(db.Text)
 
-    def __init__(self, key):
-        self.key = key
-
-    def __repr__(self):
-        return '<Key %r>' % self.key
-
-
 class SpoolkitReportgroups(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
 
-    def __init__(self, name):
-        self.name = name
+#    def __init__(self, name):
+#        self.name = name
 
-    def __repr__(self):
-        return '<Name %r>' % self.name
-
+#    def __repr__(self):
+#       return '<Name %r>' % self.name
 
 class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -133,16 +125,6 @@ class SpoolkitReports(db.Model):
     pre_script = db.Column(db.Text)
     body_script = db.Column(db.Text)
     post_script = db.Column(db.Text)
-
-    def __init__(self, name, body_script):
-        self.name = name
-        self.body_script = body_script
-
-    def __repr__(self):
-        return '<Name %r>' % self.name
-
-
-
 
 class SpoolkitUsers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -157,22 +139,10 @@ class SpoolkitUsers(db.Model):
     is_active = db.Column(db.Boolean)  
     date_joine = db.Column(db.DateTime)
     
-    def __init__(self, username):
-        self.username = username
-
-    def __repr__(self):
-        return '<Username %r>' % self.username
-
 class SpoolkitAuthUserPermissioins(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     group_id = db.Column(db.Integer)
-
-    def __init__(self, user_id):
-        self.user_id = user_id
-
-    def __repr__(self):
-        return '<Userid %r>' % self.user_id
 
 class SpoolkitSapfiles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -181,12 +151,6 @@ class SpoolkitSapfiles(db.Model):
     table_name = db.Column(db.Text)
     pre_script = db.Column(db.Text)
     post_script = db.Column(db.Text)
-
-    def __init__(self, header_field):
-        self.header_field = header_field
-
-    def __repr__(self):
-        return '<Header  %r>' % self.header_field
 
 class SpoolkitConnections(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -199,11 +163,6 @@ class SpoolkitConnections(db.Model):
     username = db.Column(db.Text)
     password = db.Column(db.Text)
 
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return '<Name %r>' % self.name
 
 db.create_all()
 
@@ -223,11 +182,20 @@ class FileView(BaseView):
     def index(self):
         return self.render('demo.html')
 
+class ReportView(ModelView):
+    column_editable_list = ['active', 'name']
+    column_display_pk = True
+
+class SapFileView(ModelView):
+#    column_editable_list = ['active', 'name']
+    column_display_pk = True
+
+
 admin = Admin(app, name='Spoolkit', template_mode='bootstrap3')
 
-admin.add_view(FileView(name='Load', endpoint='fileload', category='Files'))
-admin.add_view(FileView(name='Setup', endpoint='filesetup', category='Files'))
-admin.add_view(FileView(name='Setup', endpoint='reportsetup', category='Reports'))
+admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='** SETUP **', endpoint='filesetup', category='SAP Files'))
+admin.add_view(FileView(name='Load', endpoint='fileload', category='SAP Files'))
+admin.add_view(ReportView(SpoolkitReports, db.session, name= '** Setup ** ', endpoint='setup', category='Reports'))
 admin.add_view(FileView(name='Stats', endpoint='reportstats', category='Reports'))
 admin.add_view(FileView(name='Cache', endpoint='reportcache', category='Reports'))
 admin.add_view(FileView(name='Settings', endpoint='appsettings', category='App'))
@@ -235,7 +203,7 @@ admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'
 admin.add_view(FileView(name='Help', endpoint='help', category='App'))
 admin.add_view(FileView(name='Close', endpoint='close', category='App'))
 
-admin.add_view(sqla.ModelView(SpoolkitReports, db.session))
+admin.add_view(ModelView(SpoolkitUsers, db.session))
 
 # open up browser
 import webbrowser
