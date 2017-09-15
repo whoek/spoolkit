@@ -13,7 +13,7 @@ import sqlite3
 from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
 #from flask_admin.contrib.sqla import ModelView
-#from flask_admin.contrib import sqla
+from flask_admin.contrib import sqla
 
 #from sqlalchemy import Column, ForeignKey, Integer, String
 #from sqlalchemy.ext.declarative import declarative_base
@@ -95,14 +95,6 @@ def shutdown():
     return '''<br><br><br><br><h1>Thank you for using Spoolkit<br>
  Program shutting down... </h2><br>
         '''
-
-# ============================================================================
-#
-# MAIN APPLICATION
-#
-# ============================================================================
-
-# init_db()
 
 ############################################################################
 # SQLAlchemy
@@ -215,8 +207,7 @@ class SpoolkitConnections(db.Model):
 
 db.create_all()
 
-# Add some entries
-
+# Add some TEST entries
 rec1 = SpoolkitReports(name= 'Show date', body_script = 'select date()')
 rec2 = SpoolkitReports(name= 'Show list of reports', body_script = 'select * from spoolkit_reports')
 rec3 = SpoolkitReports(name= 'List of sap_files', body_script = 'select * from spoolkit_sapfiles')
@@ -243,6 +234,8 @@ admin.add_view(FileView(name='Settings', endpoint='appsettings', category='App')
 admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'))
 admin.add_view(FileView(name='Help', endpoint='help', category='App'))
 admin.add_view(FileView(name='Close', endpoint='close', category='App'))
+
+admin.add_view(sqla.ModelView(SpoolkitReports, db.session))
 
 # open up browser
 import webbrowser
