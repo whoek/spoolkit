@@ -10,10 +10,10 @@ import sys
 import sqlite3
 
 # used by flask-admin
-from flask_admin import Admin, BaseView, expose
+from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
-from flask_admin.contrib.sqla import ModelView
-from flask_admin.contrib import sqla
+#from flask_admin.contrib.sqla import ModelView
+#from flask_admin.contrib import sqla
 
 #from sqlalchemy import Column, ForeignKey, Integer, String
 #from sqlalchemy.ext.declarative import declarative_base
