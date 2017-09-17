@@ -100,7 +100,7 @@ def shutdown():
 # SQLAlchemy
 ############################################################################
 
-class SpoolkitConfiguration(db.Model):
+class SpoolkitSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.Text)
     value = db.Column(db.Text)
@@ -108,19 +108,19 @@ class SpoolkitConfiguration(db.Model):
 class SpoolkitReportgroups(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
-
+#
 #    def __init__(self, name):
 #        self.name = name
-
+#
 #    def __repr__(self):
 #       return '<Name %r>' % self.name
 
 class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    active = db.Column(db.Boolean)
-    name = db.Column(db.Text)
-    shortcode = db.Column(db.Text)
-    report_group = db.Column(db.Text)
+    active = db.Column(db.Boolean, default=True)
+    name = db.Column(db.String(60))
+    shortcode = db.Column(db.String(10), default='')
+    report_group = db.Column(db.String(10), default='')
     connection = db.Column(db.Text)
     pre_script = db.Column(db.Text)
     body_script = db.Column(db.Text)
@@ -183,7 +183,7 @@ class FileView(BaseView):
         return self.render('demo.html')
 
 class ReportView(ModelView):
-    column_editable_list = ['active', 'name']
+    column_editable_list = ['active', 'name','shortcode']
     column_display_pk = True
 
 class SapFileView(ModelView):
@@ -193,12 +193,12 @@ class SapFileView(ModelView):
 
 admin = Admin(app, name='Spoolkit', template_mode='bootstrap3')
 
-admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='** SETUP **', endpoint='filesetup', category='SAP Files'))
+admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(FileView(name='Load', endpoint='fileload', category='SAP Files'))
-admin.add_view(ReportView(SpoolkitReports, db.session, name= '** Setup ** ', endpoint='setup', category='Reports'))
+admin.add_view(ReportView(SpoolkitReports, db.session, name= 'Setup', endpoint='setup', category='Reports'))
 admin.add_view(FileView(name='Stats', endpoint='reportstats', category='Reports'))
 admin.add_view(FileView(name='Cache', endpoint='reportcache', category='Reports'))
-admin.add_view(FileView(name='Settings', endpoint='appsettings', category='App'))
+admin.add_view(ModelView(SpoolkitSettings, db.session, name='Settings', endpoint='appsettings', category='App'))
 admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'))
 admin.add_view(FileView(name='Help', endpoint='help', category='App'))
 admin.add_view(FileView(name='Close', endpoint='close', category='App'))
