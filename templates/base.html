@@ -1,49 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Spoolkit</title>
-    <!-- Bootstrap CSS -->
-    
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-
-
-    <!-- this was in BODY -I moved it up.  jQuery first, then Popper.js, then Bootstrap JS -->
+    <meta name="description" content="Datado - Simplify SAP master data">
+    <meta name="author" content="Willem Hoek">
+    <link rel="icon" href="/static/favicon.ico">
+    <title>Datado - Simplify SAP Master Data</title>
+  
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/starter-template.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"/>
+   
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-
-    <!-- Custom styles for this template -->
-    <!--
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="/static/bootstrap.min.js"></script>
+    
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/static/ie10-viewport-bug-workaround.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+        
+        <!-- Datatable init  -->
+        <script type="text/javascript"  language="javascript" class="init">
+        $(document).ready(function() {
+            $('table.display').DataTable({
+            "paging":   false
+        }  );
+        } );
+        </script>
+    
+<!--
     <link href="/static/grid.css" rel="stylesheet"> 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/dataTables.bootstrap.min.css"/>
 -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/site-examples.css">
-    <script type="text/javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
-    
-    <!-- Datatable init  -->
-    <script type="text/javascript"  language="javascript" class="init">
-    $(document).ready(function() {
-        $('table.display').DataTable({
-        "paging":   false
-    }  );
-    } );
-    </script>
 
 </head>
-<body class="wide comments example">
-<div class="fw-container">
-    <a href='/'><h2>SpoolKit</h2></a>  
-    {% block body %}{% endblock %}
-    <br/><br/><br/><br/>
-    Generated:   {{ now }}    
+        <body class="wide comments example">
+
+    <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">Datado</a>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+      
+         <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Dropdown link
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </li>
+      
+          </ul>
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="text" placeholder="Shortcode">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Submit</button>
+          </form>
+        </div>
+      </nav>
+      
+      <div class="container">        
+            
+        <br>
+    {% block body %}    
+    {% endblock %}
+    <br/><br/><br/>
+    Generated:   {{ now }}    <br><br><br>
 </div> <!-- /container -->
-    <!-- Bootstrap  JavaScript -->
-    <!-- Optional JavaScript -->
-  </body>
+</body>
 </html>
 
 
