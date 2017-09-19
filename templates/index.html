@@ -3,16 +3,14 @@
 {% block body %}
 <h2>Admin</h2>
 <a href=/admin/>Admin</a>  <br/>
-<a href=#>Security</a>  <br/>
-<a href=#>Settings</a>  <br/>
-<a href=#>About Spoolkit</a>  <br/>
+<a href=/admin/filesetup>SAP File setup</a>  <br/>
 ------------- <br>
 <a href=/shutdown>Close Application</a>  <br/>
 <br>
 <h2>Reports</h2>
 
   {% for report in reports %}
-    {{ report.id }} --->  <a href=/r/{{ report.id }}>{{ report.name }}</a> <br>
+    {{ report.shortcode|lower }} --->  <a href=/r/{{ report.id }}>{{ report.name }}</a> <br>
   {% else %}
     <em>Unbelievable.  No entries here so far</em>
   {% endfor %}

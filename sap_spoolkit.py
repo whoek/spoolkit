@@ -119,8 +119,8 @@ class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     active = db.Column(db.Boolean, default=True)
     name = db.Column(db.String(60))
-    shortcode = db.Column(db.String(10), default='')
-    report_group = db.Column(db.String(10), default='')
+    shortcode = db.Column(db.String(10))
+    report_group = db.Column(db.String(10))
     connection = db.Column(db.Text)
     pre_script = db.Column(db.Text)
     body_script = db.Column(db.Text)
@@ -167,9 +167,9 @@ class SpoolkitConnections(db.Model):
 db.create_all()
 
 # Add some TEST entries
-rec1 = SpoolkitReports(name= 'Show date', body_script = 'select date()')
-rec2 = SpoolkitReports(name= 'Show list of reports', body_script = 'select * from spoolkit_reports')
-rec3 = SpoolkitReports(name= 'List of sap_files', body_script = 'select * from spoolkit_sapfiles')
+rec1 = SpoolkitReports(name= 'Show date', body_script = 'select date()', shortcode = '1')
+rec2 = SpoolkitReports(name= 'Show list of reports', body_script = 'select * from spoolkit_reports', shortcode = 'M2')
+rec3 = SpoolkitReports(name= 'List of sap_files', body_script = 'select * from spoolkit_sapfiles',shortcode = 'K2')
 db.session.add_all([rec1, rec2, rec3])
 db.session.commit()
 
