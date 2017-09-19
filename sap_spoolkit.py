@@ -191,7 +191,9 @@ class SapFileView(ModelView):
     column_display_pk = True
 
 
-admin = Admin(app, name='Spoolkit', template_mode='bootstrap3')
+#admin = Admin(app, name='Spoolkit', template_mode='bootstrap3', base_template='index2.html')
+# Create admin with custom base template
+admin = Admin(app, 'Datado', base_template='admin_layout.html', template_mode='bootstrap3')
 
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(FileView(name='Load', endpoint='fileload', category='SAP Files'))
