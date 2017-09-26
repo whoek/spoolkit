@@ -2,11 +2,13 @@
 
 block_cipher = None
 
-a = Analysis(['sap_spoolkit.py'],
+
+a = Analysis(['spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],
              binaries=[],
-             datas=[
-                ( 'C:\\data\\bitbucket\\spoolkit\\templates\\*.html', 'templates' ),
+            datas=[
+                ( 'C:\\data\\bitbucket\\spoolkit\\templates', 'templates' ),
+                ( 'C:\\data\\bitbucket\\spoolkit\\templates\\admin', 'templates\\admin' ),
                 ( 'C:\\data\\bitbucket\\spoolkit\\sql\\*.sql', 'sql' ),
                 ( 'C:\\data\\bitbucket\\spoolkit\\static\\*.css', 'static' )
              ],
@@ -24,7 +26,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='sap_spoolkit',
+          name='spoolkit',
           debug=False,
           strip=False,
           upx=True,
