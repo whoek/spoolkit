@@ -1,8 +1,7 @@
-{% extends "spoolkit_base.html" %} {% block body %}
+{% extends "spoolkit_base.html" %} 
+{% block body %}
 
-
-
-<h3>{{ report.shortcode|lower }} - {{ report.name }}</h2>
+<h2>{{ report.shortcode|lower }} - {{ report.name }}</h2>
 
     <a href=/a/r/{{ report.id }}>Edit {{ report.id }}</a>
 
@@ -38,4 +37,4 @@
 
 
 
-    {% endblock %}
+{% endblock %}
