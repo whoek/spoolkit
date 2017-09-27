@@ -2,16 +2,17 @@
 
 block_cipher = None
 
+ADD_DATA = [
+        ( 'templates', 'templates' ),            
+        ( 'templates\\admin', 'templates\\admin' ),
+        ( 'templates\\admin\\model', 'templates\\admin\\model' )
+        ]
 
 a = Analysis(['spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],
              binaries=[],
-             datas=[
-                ( 'C:\\data\\bitbucket\\spoolkit\\templates', 'templates' ),
-                ( 'C:\\data\\bitbucket\\spoolkit\\templates\\admin', 'templates\\admin' ),
-                ( 'C:\\data\\bitbucket\\spoolkit\\sql\\*.sql', 'sql' ),
-                ( 'C:\\data\\bitbucket\\spoolkit\\static\\*.css', 'static' )
-             ],             hiddenimports=[],
+             datas=ADD_DATA,
+             hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
