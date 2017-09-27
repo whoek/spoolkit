@@ -64,7 +64,7 @@ def root():
     db = get_db()
     c = db.execute('select * from spoolkit_reports')
     reports = c.fetchall()
-    return render_template('index.html',
+    return render_template('spoolkit_index.html',
             reports = reports)
 
 
@@ -75,7 +75,7 @@ def view_report(id):
     c = db.execute(sql)
     report = c.fetchone()
     sql_result = db.execute(report['body_script']) 
-    return render_template('report.html',
+    return render_template('spoolkit_report.html',
             sql_result = sql_result,
             report = report )
 
@@ -180,7 +180,7 @@ db.session.commit()
 class FileView(BaseView):
     @expose('/')
     def index(self):
-        return self.render('demo.html')
+        return self.render('spoolkit_demo.html')
 
 class ReportView(ModelView):
     column_editable_list = ['active', 'name','shortcode']
@@ -193,7 +193,7 @@ class SapFileView(ModelView):
 
 #admin = Admin(app, name='Spoolkit', template_mode='bootstrap3', base_template='index2.html')
 # Create admin with custom base template
-admin = Admin(app, 'Datado', base_template='admin_layout.html', template_mode='bootstrap3')
+admin = Admin(app, 'Datado', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
 
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(FileView(name='Load', endpoint='fileload', category='SAP Files'))
