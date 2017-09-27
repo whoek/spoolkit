@@ -5,10 +5,15 @@ block_cipher = None
 ADD_DATA = [
         ( 'templates', 'templates' ),        
         ( 'static', 'static' ),    
+        ( 'static\\bootstrap-3.3.7\\css', 'static\\bootstrap-3.3.7\\css' ),    
+        ( 'static\\bootstrap-3.3.7\\fonts', 'static\\bootstrap-3.3.7\\fonts' ),    
+        ( 'static\\bootstrap-3.3.7\\js', 'static\\bootstrap-3.3.7\\js' ),    
+        ( 'static\\datatables-1.10.16\\css', 'static\\datatables-1.10.16\\css' ),    
+        ( 'static\\datatables-1.10.16\\images', 'static\\datatables-1.10.16\\images' ),    
+        ( 'static\\datatables-1.10.16\\js', 'static\\datatables-1.10.16\\js' ),    
         ( 'templates\\admin', 'templates\\admin' ),
         ( 'templates\\admin\\model', 'templates\\admin\\model' )
         ]
-
 
 a = Analysis(['spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],

@@ -13,8 +13,8 @@ import sqlite3
 from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
-#from flask_admin.contrib import sqla
 
+#from flask_admin.contrib import sqla
 #from sqlalchemy import Column, ForeignKey, Integer, String
 #from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.orm import relationship
@@ -67,7 +67,6 @@ def root():
     return render_template('spoolkit_index.html',
             reports = reports)
 
-
 @app.route("/test")
 def test():
     db = get_db()
@@ -75,7 +74,6 @@ def test():
     reports = c.fetchall()
     return render_template('spoolkit_test.html',
             reports = reports)
-
 
 
 @app.route("/r/<int:id>")
@@ -118,12 +116,6 @@ class SpoolkitSettings(db.Model):
 class SpoolkitReportgroups(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
-#
-#    def __init__(self, name):
-#        self.name = name
-#
-#    def __repr__(self):
-#       return '<Name %r>' % self.name
 
 class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -191,6 +183,7 @@ class FileView(BaseView):
     @expose('/')
     def index(self):
         return self.render('spoolkit_demo.html')
+#        return self.render('spoolkit_base.html')
 
 class ReportView(ModelView):
     column_editable_list = ['active', 'name','shortcode']
@@ -199,7 +192,6 @@ class ReportView(ModelView):
 class SapFileView(ModelView):
 #    column_editable_list = ['active', 'name']
     column_display_pk = True
-
 
 #admin = Admin(app, name='Spoolkit', template_mode='bootstrap3', base_template='index2.html')
 # Create admin with custom base template
