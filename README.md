@@ -1,29 +1,44 @@
-# README #
+# SPOOLKIT #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+How to manage files on PC.
 
-### What is this repository for? ###
+:: With python 2.7.11 installed
+set newdir=venv
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+## create new virtual environment ##
+cd C:\data\bitbucket
+RMDIR %newdir%  /S /Q      
+mkdir %newdir%
+virtualenv  venv
 
-### How do I get set up? ###
+::activate it
+venv\Scripts\activate
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+:: get packages
+pip install Flask
+pip install flask-admin
+pip install flask_sqlalchemy
+pip install https://github.com/pyinstaller/pyinstaller/tarball/develop
 
-### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
 
-### Who do I talk to? ###
+## get SPOOLKIT from BITBUCKET  ##
+cd c:\data\bitbucket
+RMDIR spoolkit /S /Q      
+git clone https://matimba@bitbucket.org/matimba/spoolkit.git
+cd spoolkit
 
-* Repo owner or admin
-* Other community or team contact
+
+:: copy templates from flask-admin to spoolkit -- ONCE OFF!!!!
+::  copy 
+:: C:\data\pyvirt\flask_admin\venv\Lib\site-packages\flask_admin\templates\bootstrap3\admin
+:: to
+:: .....\templates\admin
+
+### Build an EXE ###
+
+cd C:\data\bitbucket
+venv\Scripts\pyinstaller spoolkit\__spoolkit.spec
+
+
+
