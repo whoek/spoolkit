@@ -3,7 +3,8 @@
 block_cipher = None
 
 ADD_DATA = [
-        ( 'templates', 'templates' ),            
+        ( 'templates', 'templates' ),        
+        ( 'static', 'static' ),    
         ( 'templates\\admin', 'templates\\admin' ),
         ( 'templates\\admin\\model', 'templates\\admin\\model' )
         ]
