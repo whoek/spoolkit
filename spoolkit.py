@@ -68,6 +68,16 @@ def root():
             reports = reports)
 
 
+@app.route("/test")
+def test():
+    db = get_db()
+    c = db.execute('select * from spoolkit_reports')
+    reports = c.fetchall()
+    return render_template('spoolkit_test.html',
+            reports = reports)
+
+
+
 @app.route("/r/<int:id>")
 def view_report(id):
     db = get_db()
@@ -146,9 +156,9 @@ class SpoolkitAuthUserPermissioins(db.Model):
 
 class SpoolkitSapfiles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    keyword = db.Column(db.Text)
-    header_field = db.Column(db.Text)
-    table_name = db.Column(db.Text)
+    keyword =  db.Column(db.String(50))
+    header_field = db.Column(db.String(50))
+    table_name = db.Column(db.String(50))
     pre_script = db.Column(db.Text)
     post_script = db.Column(db.Text)
 
