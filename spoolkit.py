@@ -1,7 +1,7 @@
 """
-
     Spoolkit
     :copyright: (c) 2017 by Willem Hoek.
+
 """
 from flask import Flask, render_template, g, request
 import time
@@ -13,12 +13,6 @@ import sqlite3
 from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
-
-#from flask_admin.contrib import sqla
-#from sqlalchemy import Column, ForeignKey, Integer, String
-#from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.orm import relationship
-#from sqlalchemy import create_engine
 
 APP_PATH = os.path.abspath(".")          # application path     
 
