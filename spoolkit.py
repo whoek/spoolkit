@@ -9,10 +9,10 @@ import os
 import sys
 import sqlite3
 
-# used by flask-admin
 from flask_admin import  Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin.contrib.sqla import ModelView
+import webbrowser   
 
 APP_PATH = os.path.abspath(".")          # application path     
 
@@ -202,7 +202,6 @@ admin.add_view(FileView(name='Close', endpoint='close', category='App'))
 admin.add_view(ModelView(SpoolkitUsers, db.session))
 
 # open up browser
-import webbrowser
 webbrowser.open('http://localhost:9090/', new = 2)
 
 # Run DEV server
