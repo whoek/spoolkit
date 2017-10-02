@@ -119,6 +119,7 @@ class SpoolkitReports(db.Model):
     pre_script = db.Column(db.Text)
     body_script = db.Column(db.Text)
     post_script = db.Column(db.Text)
+    cache_duration = db.Column(db.Integer, default=0)
 
 class SpoolkitUsers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
