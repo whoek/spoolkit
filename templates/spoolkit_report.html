@@ -1,39 +1,12 @@
 {% extends "spoolkit_base.html" %} 
 {% block body %}
 
-<h2>{{ report.shortcode|lower }} - {{ report.name }}</h2>
+<h3>{{ report.shortcode|lower }} - {{ report.name }}</h3>
+<hr>
 
-    <a href=/a/r/{{ report.id }}>Edit {{ report.id }}</a>
-
-    <h4>report_sql</h4>
-    {{ report.body_script }}<br><br>
-
-    <h4>The sql result</h4>
-    {% for row in sql_result %} {% for field in row %} {{ field }} | {% endfor %} <br> {% endfor %}
-    <br>
-    <h4>post_script</h4>
-    {{ report.post_script }}
-    <br>
-
-
-    <table id="" class="display">
-        <thead>
-            <tr>
-                <th>Column 1</th>
-                <th>Column 2</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Row 1 Data 1</td>
-                <td>Row 1 Data 2</td>
-            </tr>
-            <tr>
-                <td>Row 2 Data 1</td>
-                <td>Row 2 Data 2</td>
-            </tr>
-        </tbody>
-    </table>
+    <a href=/admin/setup/edit/?url=%2Fadmin%2Fsetup%2F&id={{ report.id }}>Edit {{ report.id }}</a>
+        <br><br><br>
+{{ md_text }}
 
 
 

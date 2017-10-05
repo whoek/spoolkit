@@ -4,7 +4,7 @@
 <h2>Reports</h2>
 
   {% for report in reports %}
-    {{ report.shortcode|lower }} --->  <a href=/r/{{ report.id }}>{{ report.name }}</a> <br>
+    <a href=/r/{{ report.id }}>{{ report.name }}</a> -- {{ report.shortcode|lower }} <br>
   {% else %}
     <em>Unbelievable.  No entries here so far</em>
   {% endfor %}
