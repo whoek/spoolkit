@@ -60,7 +60,7 @@ def query_db(query, args=(), one=False):
     return (rv[0] if rv else None) if one else rv
 
 
-def write_block(mode, block):
+def write_block(mode, block, table_count):
     """
     Used by insert tags 
     """
@@ -70,7 +70,7 @@ def write_block(mode, block):
         try:
             result = db.engine.execute(block)
 #            result = db.engine.execute("SELECT 'willem' as 'name', date('now') as 'date';")
-            html = '<table id="example" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>'
+            html = '<table id="table' + str(table_count) + '" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>'
             for desc in  result.cursor.description:
                 html += '<th>' + str(desc[0]) + '</th>' 
             html += '</tr></thead><tbody>'
@@ -100,6 +100,7 @@ def insert_tags(text):
     mode = '00'     # default
     blankline_count = 0
     block = ''
+    table_count = 0
     report = ''
     for line in text.split('\n'):
         try:
@@ -107,23 +108,25 @@ def insert_tags(text):
                 ' ', '').replace('\r', '').lower()
         except:
             line_no_spaces = line           # weird encoding
+
         if line_no_spaces == '--sql':
-            report += write_block(mode, block)
+            report += write_block(mode, block, table_count)
+            table_count += 1
             mode = '01'
             blankline_count = 0
             block = ''
         elif line_no_spaces == '' and mode == '01':
             blankline_count += 1
         elif line_no_spaces == '--text' or (blankline_count == 3 and mode == '01'):
-            report += write_block(mode, block)
+            report += write_block(mode, block, table_count)
             mode = '00'
             blankline_count = 0
             block = ''
         else:
             block += line + '\n'
             blankline_count = 0
-    report += write_block(mode, block)
-    return report
+    report += write_block(mode, block, table_count)
+    return report, table_count       # report is html, table_count get used to adjust datatable JS in header
 
 ############################### ROUTING ################################################
 
@@ -144,17 +147,13 @@ def test():
 @app.route("/r/<int:id>")
 def view_report(id):
     report = SpoolkitReports.query.filter_by(id=id).first_or_404()
-    md_text = insert_tags(report.script)
-
-    result = db.engine.execute("select 1,2,3,4")
-    names = []
-    for row in result:
-        names.append(row[0])
-    print names
+    md_text, table_count = insert_tags(report.script)
+    table_count = range(1,table_count+1)
 
     return render_template('spoolkit_report.html',
                            report=report,
                            md_text=md_text,
+                           table_count = table_count,
                            )
 
 @app.context_processor

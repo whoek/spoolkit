@@ -1,13 +1,17 @@
 {% extends "spoolkit_base.html" %} 
-{% block body %}
 
+{% block datatable_init %}
+{% for table in table_count %}
+    $('#table{{ table }}').DataTable({
+        "paging": false
+    });
+{% endfor %}
+{% endblock %}
+
+{% block body %}
 <h3>{{ report.shortcode|lower }} - {{ report.name }}</h3>
 <hr>
-
     <a href=/admin/setup/edit/?url=%2Fadmin%2Fsetup%2F&id={{ report.id }}>Edit {{ report.id }}</a>
         <br><br><br>
 {{ md_text }}
-
-
-
 {% endblock %}
