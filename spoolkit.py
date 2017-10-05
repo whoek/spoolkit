@@ -115,13 +115,13 @@ def insert_tags(text):
             mode = '01'
             blankline_count = 0
             block = ''
-        elif line_no_spaces == '' and mode == '01':
+        elif (line_no_spaces == '' and mode == '01') or  line_no_spaces == '--text':
             blankline_count += 1
-        elif line_no_spaces == '--text' or (blankline_count == 3 and mode == '01'):
-            report += write_block(mode, block, table_count)
-            mode = '00'
-            blankline_count = 0
-            block = ''
+            if (blankline_count == 3 and mode == '01') or line_no_spaces == '--text':
+                report += write_block(mode, block, table_count)
+                mode = '00'
+                blankline_count = 0
+                block = ''
         else:
             block += line + '\n'
             blankline_count = 0

@@ -8,23 +8,6 @@
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Spoolkit Test Page</title>
 
-  <!-- 
-    FLASK-ADMIN:
-
-    -swatch/default/bootsrap  3.3.5
-    -  bootstrap theme 3.3.5
-    - admin 1.1.1
-
-    FLASK-ADMIN in EDIT MODE ?????
-            
-  <link href="/sqla/simple/admin/static/vendor/select2/select2.css?v=3.5.2" rel="stylesheet">
-  <link href="/sqla/simple/admin/static/vendor/select2/select2-bootstrap3.css?v=1.4.6" rel="stylesheet">
-  <link href="/sqla/simple/admin/static/vendor/bootstrap-daterangepicker/daterangepicker-bs3.css?v=1.3.22" rel="stylesheet">
-
-  -- this was initially used for BOOTSTRAP --
-  <link rel="stylesheet" type="text/css" href="/static/bootstrap-3.3.7/css/bootstrap.min.css"/>
-
-    -->
   <!-- datatables CSS -->
   <link rel="stylesheet" type="text/css" href="/static/datatables-1.10.16/css/dataTables.bootstrap.min.css" />
 
@@ -84,7 +67,7 @@
       $('#table101').DataTable({
         "paging": false
       });
-      {% block datatable_init %} {% endblock %}
+      {% block datatable_init %}{% endblock %}
     });
 
   </script>
@@ -114,6 +97,7 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
             <ul class="dropdown-menu">
               <li><a href="/admin/setup/">Build Reports</a></li>
+              <li role="separator" class="divider"></li>
               <li><a href="#">Report Statistics</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="#">Run Multiple  Reports</a></li>
@@ -127,7 +111,7 @@
               <li><a href="#">Documentation</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="#">Give Feedback</a></li>
-              <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new">Report an Issue</a></li>
+              <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new" target="_blank">Report an Issue</a></li>
               <li><a href="#">Check for Updates</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="/admin/appsettings">Settings</a></li>
@@ -149,8 +133,6 @@
                       </button>
               </div>
             </div>
-
-
           </form>
         </ul>
       </nav>
