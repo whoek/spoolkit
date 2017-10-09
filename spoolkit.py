@@ -7,6 +7,8 @@ from flask import Flask, render_template, g, request, Markup
 import markdown
 import time
 import os
+from os import listdir
+from os.path import isfile, join, getsize, getctime
 import sys
 import sqlite3
 import webbrowser
@@ -70,9 +72,11 @@ def write_block(mode, block, table_count):
         try:
             result = db.engine.execute(block)
 #            result = db.engine.execute("SELECT 'willem' as 'name', date('now') as 'date';")
-            html = '<table id="table' + str(table_count) + '" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>'
-            for desc in  result.cursor.description:
-                html += '<th>' + str(desc[0]) + '</th>' 
+            html = '<table id="table' + \
+                str(table_count) + \
+                '" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>'
+            for desc in result.cursor.description:
+                html += '<th>' + str(desc[0]) + '</th>'
             html += '</tr></thead><tbody>'
             for row in result:
                 html += '<tr>'
@@ -115,7 +119,7 @@ def insert_tags(text):
             mode = '01'
             blankline_count = 0
             block = ''
-        elif (line_no_spaces == '' and mode == '01') or  line_no_spaces == '--text':
+        elif (line_no_spaces == '' and mode == '01') or line_no_spaces == '--text':
             blankline_count += 1
             if (blankline_count == 3 and mode == '01') or line_no_spaces == '--text':
                 report += write_block(mode, block, table_count)
@@ -126,7 +130,8 @@ def insert_tags(text):
             block += line + '\n'
             blankline_count = 0
     report += write_block(mode, block, table_count)
-    return report, table_count       # report is html, table_count get used to adjust datatable JS in header
+    # report is html, table_count get used to adjust datatable JS in header
+    return report, table_count
 
 ############################### ROUTING ################################################
 
@@ -144,21 +149,24 @@ def test():
     return render_template('spoolkit_test.html',
                            reports=reports)
 
+
 @app.route("/r/<int:id>")
 def view_report(id):
     report = SpoolkitReports.query.filter_by(id=id).first_or_404()
     md_text, table_count = insert_tags(report.script)
-    table_count = range(1,table_count+1)
+    table_count = range(1, table_count + 1)
 
     return render_template('spoolkit_report.html',
                            report=report,
                            md_text=md_text,
-                           table_count = table_count,
+                           table_count=table_count,
                            )
+
 
 @app.context_processor
 def inject_now():
     return {'now': time.ctime()}
+
 
 @app.route('/shutdown', methods=['GET'])   # GET = link,  POST = button
 def shutdown():
@@ -169,6 +177,41 @@ def shutdown():
     return '''<br><br><br><br><h1>Thank you for using Spoolkit<br>
  Program shutting down... </h2><br>
         '''
+
+@app.route('/loadfiles', methods=['GET'])   
+def loadfiles():
+#    my_path = op.join(op.dirname(__file__), 'files')
+    keywords = SpoolkitSapfiles.query.all()
+    mypath = APP_PATH
+
+    sp01_text = '<h2>SAP files to process</h2>Path: ' + \
+    mypath + '<br/><br/>   <table border="1"> ' + \
+    '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td>'
+
+    onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+    for f in onlyfiles:
+        ff = open(mypath + '/' + f,"r")
+        head = [ff.readline() for i in range(100)]    # read first 100 line of file
+        head = str(head).lower()
+        ff.close()
+
+        # check if any keyword is in any of files
+        keyword_found = ''
+#        for word in keywords:
+#            if word[0].lower() in head:
+#                keyword_found = word[0].lower()
+
+        sp01_text = sp01_text + '<tr>'\
+            '<td>' + '<a href="/qq/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
+            '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
+            '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
+            '<td>' + str(keyword_found) + '</td>' + \
+            '</tr>'
+
+    sp01_text = sp01_text + "</table>"
+    return sp01_text
+
+    
 ############################################################################
 # SQLAlchemy
 ############################################################################
@@ -280,7 +323,7 @@ admin = Admin(app, 'Datado', base_template='spoolkit_admin_layout.html',
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session,
                            name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(
-    FileView(name='Load', endpoint='fileload', category='SAP Files'))
+    FileView(name='Load', endpoint='loadfiles', category='SAP Files'))
 admin.add_view(ReportView(SpoolkitReports, db.session,
                           name='Setup', endpoint='setup', category='Reports'))
 admin.add_view(
