@@ -212,7 +212,10 @@ def loadfiles():
                 '<td>' + str(keyword_found) + '</td>' + \
                 '</tr>'
         sp01_text += "</table><br><br>"
-    return sp01_text
+    return render_template('spoolkit_sapfiles.html',
+                           sp01_text = sp01_text,
+                           )
+
 
     
 ############################################################################
