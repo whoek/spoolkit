@@ -181,34 +181,37 @@ def shutdown():
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
 #    my_path = op.join(op.dirname(__file__), 'files')
-    keywords = SpoolkitSapfiles.query.all()
-    mypath = APP_PATH
+    sapfiles = SpoolkitSapfiles.query.all()
 
-    sp01_text = '<h2>SAP files to process</h2>Path: ' + \
-    mypath + '<br/><br/>   <table border="1"> ' + \
-    '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td>'
+    sp01_text = '<h2>SAP files to process</h2>'
+    settings = SpoolkitSettings.query.filter_by(key='sapfile_dir').all()
+    for setting in settings:
+        mypath = setting.value
 
-    onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
-    for f in onlyfiles:
-        ff = open(mypath + '/' + f,"r")
-        head = [ff.readline() for i in range(100)]    # read first 100 line of file
-        head = str(head).lower()
-        ff.close()
+        sp01_text += 'Path: ' + \
+            str(mypath) + '<br/><br/>   <table border="1"> ' + \
+            '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td>'
 
-        # check if any keyword is in any of files
-        keyword_found = ''
-#        for word in keywords:
-#            if word[0].lower() in head:
-#                keyword_found = word[0].lower()
+        onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+        for f in onlyfiles:
+            ff = open(mypath + '/' + f,"r")
+            head = [ff.readline() for i in range(100)]    # read first 100 line of file
+            head = str(head).lower()
+            ff.close()
 
-        sp01_text = sp01_text + '<tr>'\
-            '<td>' + '<a href="/qq/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
-            '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
-            '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
-            '<td>' + str(keyword_found) + '</td>' + \
-            '</tr>'
+            # check if any keyword is in any of files
+            keyword_found = ''
+            for sapfile in sapfiles:
+                if sapfile.keyword.lower() in head:
+                    keyword_found = sapfile.keyword.lower()
 
-    sp01_text = sp01_text + "</table>"
+            sp01_text += '<tr>'\
+                '<td>' + '<a href="/qq/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
+                '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
+                '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
+                '<td>' + str(keyword_found) + '</td>' + \
+                '</tr>'
+        sp01_text += "</table><br><br>"
     return sp01_text
 
     
