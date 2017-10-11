@@ -308,16 +308,11 @@ class SpoolkitConnections(db.Model):
 db.create_all()
 
 # Add some TEST entries
-rec1 = SpoolkitReports(
-    name='Show date', script='select date()', shortcode='1', is_active=True)
-rec2 = SpoolkitReports(name='Show list of reports',
-                       script='select * from spoolkit_reports', shortcode='M2', is_active=True)
-rec3 = SpoolkitReports(name='List of sap_files',
-                       script='select * from spoolkit_sapfiles', shortcode='K2', is_active=True)
+rec1 = SpoolkitReports(name='Show date', script='select date()', shortcode='1', is_active=True)
+rec2 = SpoolkitReports(name='Show list of reports', script='select * from spoolkit_reports', shortcode='M2', is_active=True)
+rec3 = SpoolkitReports(name='List of sap_files', script='select * from spoolkit_sapfiles', shortcode='K2', is_active=True)
 db.session.add_all([rec1, rec2, rec3])
 db.session.commit()
-
-
 
 ############################################################################
 # flask-admin
@@ -327,9 +322,8 @@ db.session.commit()
 class FileView(BaseView):
     @expose('/')
     def index(self):
-        return self.render('spoolkit_demo.html')
-#        return self.render('spoolkit_base.html')
-
+#        return self.render('spoolkit_demo.html')
+        return self.render('spoolkit_base.html')
 
 class ReportView(ModelView):
     column_editable_list = ['is_active', 'shortcode']
