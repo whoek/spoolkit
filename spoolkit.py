@@ -198,7 +198,7 @@ def loadfiles():
 
         sp01_text += 'Path: ' + \
             str(mypath) + '<br/><br/>   <table border="1"> ' + \
-            '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td><th>Status</td>'
+            '<th>Load</td><th>File</td><th>Date</td><th>Size_MB</td><th>Key</td><th>Status</td>'
 
         onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
         for f in onlyfiles:
@@ -213,8 +213,8 @@ def loadfiles():
                 if sapfile.keyword.lower() in head:
                     keyword_found = sapfile.keyword.lower()
 
-            sp01_text += '<tr>'\
-                '<td>' + '<a href="/qq/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
+            sp01_text += '<tr><td><input type="checkbox" name="vehicle" value="Bike"></td>' + \
+                '<td>' + '<a href="/f/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
                 '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
                 '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
                 '<td>' + str(keyword_found) + '</td>' + \
@@ -224,6 +224,20 @@ def loadfiles():
     return render_template('spoolkit_sapfiles.html',
                            sp01_text = sp01_text,
                            )
+
+@app.route('/_file_process')
+def _file_process():
+    try:
+        dir = request.args.get('dir', '', type=str) 
+        file = request.args.get('file', '', type=str) 
+        keyword = request.args.get('keyword', '', type=str) 
+        if keyword == 'willem':
+            return jsonify(result='hello willem')
+        else:
+            return jsonify(result='not willem')
+    except Exception as e:
+        return str(e)
+
 @app.route('/background_process')
 def background_process():
     try:
