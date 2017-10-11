@@ -2,8 +2,15 @@
     Spoolkit
     :copyright: (c) 2017 by Willem Hoek.
 
+    flash options:  
+    success --> green
+    info    --> blue
+    warning --> orange
+    danger -->  red
+
+
 """
-from flask import Flask, render_template, g, request, Markup
+from flask import Flask, render_template, g, request, Markup, jsonify, flash
 import markdown
 import time
 import os
@@ -133,15 +140,17 @@ def insert_tags(text):
     # report is html, table_count get used to adjust datatable JS in header
     return report, table_count
 
-############################### ROUTING ################################################
-
+#######################################################################################
+#
+#  Flask - ROUTING
+#
+#######################################################################################
 
 @app.route("/")
 def root():
     reports = SpoolkitReports.query.all()
     return render_template('spoolkit_index.html',
                            reports=reports)
-
 
 @app.route("/test")
 def test():
@@ -161,7 +170,6 @@ def view_report(id):
                            md_text=md_text,
                            table_count=table_count,
                            )
-
 
 @app.context_processor
 def inject_now():
@@ -190,7 +198,7 @@ def loadfiles():
 
         sp01_text += 'Path: ' + \
             str(mypath) + '<br/><br/>   <table border="1"> ' + \
-            '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td>'
+            '<th>File</td><th>Date</td><th>Size_MB</td><th>Key</td><th>Status</td>'
 
         onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
         for f in onlyfiles:
@@ -210,14 +218,25 @@ def loadfiles():
                 '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
                 '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
                 '<td>' + str(keyword_found) + '</td>' + \
+                '<td id=result><img id="loading01" style="display: none" src="/static/vendor/x-editable/img/loading.gif"></td>' + \
                 '</tr>'
         sp01_text += "</table><br><br>"
     return render_template('spoolkit_sapfiles.html',
                            sp01_text = sp01_text,
                            )
+@app.route('/background_process')
+def background_process():
+    try:
+        lang = request.args.get('proglang', 0, type=str)   
+        time.sleep(2)
+        if lang.lower() == 'python':
+            return jsonify(result='You are wise')
+        else:
+            return jsonify(result='Try again.')
+    except Exception as e:
+        return str(e)
 
 
-    
 ############################################################################
 # SQLAlchemy
 ############################################################################
@@ -297,6 +316,8 @@ rec3 = SpoolkitReports(name='List of sap_files',
                        script='select * from spoolkit_sapfiles', shortcode='K2', is_active=True)
 db.session.add_all([rec1, rec2, rec3])
 db.session.commit()
+
+
 
 ############################################################################
 # flask-admin
