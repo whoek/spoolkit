@@ -10,7 +10,7 @@
 
 
 """
-from flask import Flask, render_template, g, request, Markup, jsonify, flash
+from flask import Flask, render_template, g, request, Markup, jsonify, flash, redirect, url_for
 import markdown
 import time
 import os
@@ -196,9 +196,12 @@ def loadfiles():
     for setting in settings:
         mypath = setting.value
 
-        sp01_text += 'Path: ' + \
-            str(mypath) + '<br/><br/>   <table border="1"> ' + \
-            '<th>Load</td><th>File</td><th>Date</td><th>Size_MB</td><th>Key</td><th>Status</td>'
+        sp01_text += '<p>File path: <samp>' +  str(mypath) + '</samp></p>' + \
+            '<table class="table table-condensed table-bordered"> ' + \
+            '<th>Load</th>' + \
+            '<th>File name</th><th>File date</th><th>File size - MB</th>' + \
+            '<th>Key field in file</th><th>Column field in file</th><th>DB Table</th>' + \
+            '</tr>'
 
         onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
         for f in onlyfiles:
@@ -213,19 +216,40 @@ def loadfiles():
                 if sapfile.keyword.lower() in head:
                     keyword_found = sapfile.keyword.lower()
 
-            sp01_text += '<tr><td><input type="checkbox" name="vehicle" value="Bike"></td>' + \
-                '<td>' + '<a href="/f/%s/%s/">%s</a>' % (str(keyword_found), str(f),str(f),) +  '</td>' + \
-                '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>'\
+            sp01_text += '<tr>'
+
+            filename = str(os.path.join(mypath, f))
+
+            if str(keyword_found) == '':
+                sp01_text += '<td></td>'
+            else:
+                sp01_text += '<td class="text-center"><input type="radio" name="filename" value="' + filename + '"></td>'
+            sp01_text += '<td><a href="#">' + str(f) + '</a></td>' + \
+                '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>' + \
                 '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
-                '<td>' + str(keyword_found) + '</td>' + \
-                '<td id=result><img id="loading01" style="display: none" src="/static/vendor/x-editable/img/loading.gif"></td>' + \
-                '</tr>'
-        sp01_text += "</table><br><br>"
+                '<td>' + str(keyword_found) + '</td><td></td><td></td>'
+            sp01_text += '</tr>'
+        sp01_text += "</table>"
+
+    
     return render_template('spoolkit_sapfiles.html',
                            sp01_text = sp01_text,
                            )
 
-@app.route('/_file_process')
+
+@app.route('/file_process', methods=['GET', 'POST'])
+def file_process():
+    if request.method == 'POST':
+        data = request.form
+        time.sleep(5)
+        flash(str(data))
+        return redirect(url_for('loadfiles'))
+    else:
+        flash("ERROR OCCURED -- TRY AGAIN")
+        return redirect(url_for('loadfiles'))
+
+
+@app.route('/_file_process_TEST')
 def _file_process():
     try:
         dir = request.args.get('dir', '', type=str) 
@@ -242,7 +266,7 @@ def _file_process():
 def background_process():
     try:
         lang = request.args.get('proglang', 0, type=str)   
-        time.sleep(2)
+        time.sleep(5)
         if lang.lower() == 'python':
             return jsonify(result='You are wise')
         else:

@@ -1,32 +1,17 @@
-{% extends "spoolkit_base.html" %} 
-
-{% block end_of_header %}
-
-<script type=text/javascript>
-    $(function() {
-      $('a#process_file').bind('click', function() {
-        $.getJSON('/_file_process', {
-          proglang: $('input[name="proglang"]').val(),
-        }, function(data) {
-          $("#result").text(data.result);
-        });
-        return false;
-      });
-    });
-</script>
-
-{% endblock %}
-
-{% block body %}
-{{ sp01_text|safe }}
+{% extends "spoolkit_base.html" %} {% block end_of_header %} {% endblock %} {% block body %}
 
 
-<div class='container'>
-        <form>
-            <a href=# id=process_file><button class='btn btn-default'>Process files</button></a>
-        </form>
-    </div>
+<form action="/file_process" method="post">
+    {{ sp01_text|safe }}
+<button type="submit"  name="1" id="myButton" data-loading-text="Loading..." class="btn btn-primary btn-lg" autocomplete="off">
+    Load file</button>
+</form>
 
 
+<script type="text/javascript">
+        $('#myButton').on('click', function () {
+          var $btn = $(this).button('loading')          
+        })
+      </script>
 
 {% endblock %}
