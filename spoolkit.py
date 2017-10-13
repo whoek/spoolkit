@@ -188,23 +188,21 @@ def shutdown():
 
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
-#    my_path = op.join(op.dirname(__file__), 'files')
     sapfiles = SpoolkitSapfiles.query.all()
-
-    sp01_text = '<h2>SAP files to process</h2>'
     settings = SpoolkitSettings.query.filter_by(key='sapfile_dir').all()
+    allfiles = []
     for setting in settings:
         mypath = setting.value
-
-        sp01_text += '<p>File path: <samp>' +  str(mypath) + '</samp></p>' + \
-            '<table class="table table-condensed table-bordered"> ' + \
-            '<th>Load</th>' + \
-            '<th>File name</th><th>File date</th><th>File size - MB</th>' + \
-            '<th>Key field in file</th><th>Column field in file</th><th>DB Table</th>' + \
-            '</tr>'
-
+        t_directory = {}
+        t_directory["directory"] = mypath
         onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+        t_allfiles = []
         for f in onlyfiles:
+            t_file = {}
+            t_file["filename"] = f
+            t_file["fullfilename"] = str(os.path.join(mypath, f))
+            t_file["filedate"] = str(time.ctime(getctime(mypath + '/' + f)))
+            t_file["filesize"] = str(os.path.getsize(mypath + '/' + f)/1000000)
             ff = open(mypath + '/' + f,"r")
             head = [ff.readline() for i in range(100)]    # read first 100 line of file
             head = str(head).lower()
@@ -215,27 +213,17 @@ def loadfiles():
             for sapfile in sapfiles:
                 if sapfile.keyword.lower() in head:
                     keyword_found = sapfile.keyword.lower()
+                    t_file["keyword"] = keyword_found
 
-            sp01_text += '<tr>'
+            t_file["column_field"] = ''
+            t_file["database_table"] = ''
+            t_allfiles.append(t_file)
+        t_directory["files"] = t_allfiles
+        allfiles.append(t_directory)            
 
-            filename = str(os.path.join(mypath, f))
-
-            if str(keyword_found) == '':
-                sp01_text += '<td></td>'
-            else:
-                sp01_text += '<td class="text-center"><input type="radio" name="filename" value="' + filename + '"></td>'
-            sp01_text += '<td><a href="#">' + str(f) + '</a></td>' + \
-                '<td>' + str(time.ctime(getctime(mypath + '/' + f)))  + '</td>' + \
-                '<td>' + str(os.path.getsize(mypath + '/' + f)/1000000) +  '</td>' + \
-                '<td>' + str(keyword_found) + '</td><td></td><td></td>'
-            sp01_text += '</tr>'
-        sp01_text += "</table>"
-
-    
     return render_template('spoolkit_sapfiles.html',
-                           sp01_text = sp01_text,
+                           allfiles =   allfiles,
                            )
-
 
 @app.route('/file_process', methods=['GET', 'POST'])
 def file_process():
