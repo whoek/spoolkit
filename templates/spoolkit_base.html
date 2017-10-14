@@ -85,28 +85,43 @@
     <div class="header clearfix">
       <nav>
         <ul class="nav nav-pills navbar-left">
+
+          <!-- Home -->  
           <li role="presentation" class="active"><a href="/">Home</a></li>
+
           <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+
+          <!-- Load files -->
+          <li role="presentation"><a href="/loadfiles">Load files</a></li>
+
+          <!-- Setup -->
           <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="/loadfiles">Load SAP Files</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="/admin/filesetup/">Define File Format</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Setup<span class="caret"></a>
             <ul class="dropdown-menu">
               <li><a href="/admin/setup/">Build Reports</a></li>
               <li role="separator" class="divider"></li>
-              <li class="disabled"><a href="#">Report Statistics</a></li>
+              <li><a href="/admin/filesetup/">Define input file format</a></li>
               <li role="separator" class="divider"></li>
-              <li class="disabled"><a href="#">Run Multiple  Reports</a></li>
-              <li class="disabled"><a href="#">Report Cache Management</a></li>
+              <li><a href="#">Run Multiple Reports</a></li>
+              <li><a href="#">Report Statistics</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="/admin/appsettings">General Settings</a></li>
+              <li><a href="#">Database connections</a></li>
             </ul>
           </li>
 
+          <!-- Tasks -->
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tasks<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Configure Tasks</a></li>
+              <li><a href="#">Manage Tasks</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#">Task Log</a></li>
+            </ul>
+          </li>
+        
+          <!-- Help -->
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
             <ul class="dropdown-menu">
@@ -116,31 +131,28 @@
               <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new" target="_blank">Report an Issue</a></li>
               <li><a href="#">Check for Updates</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="/admin/appsettings">Settings</a></li>
-              <li role="separator" class="divider"></li>
               <li><a href="/shutdown">Close Application</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="#">About</a></li>
             </ul>
           </li>
         </ul>
-
+        
+        <!-- Search -->
         <ul class="nav nav-pills navbar-right">
           <form class="navbar-form navbar-left">
             <div class="input-group">
               <input type="text" class="form-control" placeholder="Shortcode">
               <div class="input-group-btn">
-                <button class="btn btn-success" type="submit">
-                        <i class="glyphicon glyphicon-search"></i>
-                      </button>
+                <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-search"></i></button>
               </div>
             </div>
           </form>
         </ul>
+
       </nav>
     </div>
     <!-- End of navbar -->
-
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}

@@ -2,16 +2,14 @@
 
 <h2>SAP files to process</h2>
 
-<div>
-<p>Select the file you want to load and then press button to load.</p> 
-</div>
+<blockquote>Select the file you want to load in database.</blockquote>
+
 <form action="/file_process" method="post">
 
     <button type="submit" name="1" id="myButton" data-loading-text="Loading..." class="btn btn-primary btn-lg" autocomplete="off">
-            Load file</button>
+    Load file</button><br><br>
 
-            <br><br>
-            {% for d in allfiles %} 
+{% for d in allfiles %} 
             
 <p>File path: <samp>{{ d.directory }}</samp></p>
 

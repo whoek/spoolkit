@@ -229,7 +229,7 @@ def loadfiles():
 def file_process():
     if request.method == 'POST':
         data = request.form
-        time.sleep(5)
+        time.sleep(1)
         flash(str(data))
         return redirect(url_for('loadfiles'))
     else:
@@ -379,4 +379,4 @@ webbrowser.open('http://localhost:9090/', new=2)
 
 # Run DEV server
 if __name__ == "__main__":
-    app.run(port=9090, host='0.0.0.0', debug=True, use_reloader=False)
+    app.run(port=9090, host='0.0.0.0', debug=True, use_reloader=True)
