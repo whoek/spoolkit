@@ -26,14 +26,14 @@
     {% for f in d.files %}
     <tr>
         <td class="text-center">
-        {% if f.keyword is defined %}<input type="radio" name="fullfilename" value="{{ f.fullfilename }}">{% endif %}
+        {% if f.table_name is defined %}<input type="radio" name="fullfilename" value="{{ f.fullfilename }}">{% endif %}
         </td>            
         <td><a href="#">{{ f.filename }}</a></td>
         <td>{{ f.filedate }}</td>
         <td class="text-center">{{ f.filesize }}</td>
         <td> {{ f.keyword }} </td>
-        <td>{{ f.column_field }} </td>
-        <td>{{ f.database_table }} </td>
+        <td>{{ f.header_field }} </td>
+        <td>{{ f.table_name }} </td>
     </tr>          
     {% endfor %} 
 </table>

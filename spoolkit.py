@@ -8,6 +8,7 @@
     warning --> orange
     danger -->  red
 
+https://stackoverflow.com/questions/19516767/controlling-flask-server-from-commandline-gui
 
 """
 from flask import Flask, render_template, g, request, Markup, jsonify, flash, redirect, url_for
@@ -188,35 +189,37 @@ def shutdown():
 
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
-    sapfiles = SpoolkitSapfiles.query.all()
-    settings = SpoolkitSettings.query.filter_by(key='sapfile_dir').all()
+    sapfile_setup = SpoolkitSapfiles.query.all()
+    sapfile_dir = SpoolkitSettings.query.filter_by(key='sapfile_dir').all()
     allfiles = []
-    for setting in settings:
-        mypath = setting.value
+    for sapdir in sapfile_dir:
+        mypath = sapdir.value
         t_directory = {}
         t_directory["directory"] = mypath
-        onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+        file_list = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
         t_allfiles = []
-        for f in onlyfiles:
+        for f in file_list:
             t_file = {}
             t_file["filename"] = f
             t_file["fullfilename"] = str(os.path.join(mypath, f))
             t_file["filedate"] = str(time.ctime(getctime(mypath + '/' + f)))
             t_file["filesize"] = str(os.path.getsize(mypath + '/' + f)/1000000)
+
+            # get first 100 lines of file
             ff = open(mypath + '/' + f,"r")
-            head = [ff.readline() for i in range(100)]    # read first 100 line of file
+            head = [ff.readline() for i in range(100)]    
             head = str(head).lower()
             ff.close()
 
-            # check if any keyword is in any of files
-            keyword_found = ''
-            for sapfile in sapfiles:
+            # check if file is setup.  Add tablename only if both were found
+            for sapfile in sapfile_setup:
                 if sapfile.keyword.lower() in head:
-                    keyword_found = sapfile.keyword.lower()
-                    t_file["keyword"] = keyword_found
-
-            t_file["column_field"] = ''
-            t_file["database_table"] = ''
+                    t_file["keyword"] = sapfile.keyword.lower()
+                if sapfile.header_field.lower() in head:
+                    t_file["header_field"] = sapfile.header_field.lower()
+                if ('header_field' in t_file.keys()) and ('keyword' in t_file.keys()):
+                    t_file["table_name"] = sapfile.table_name.lower()
+                    break
             t_allfiles.append(t_file)
         t_directory["files"] = t_allfiles
         allfiles.append(t_directory)            
@@ -225,43 +228,22 @@ def loadfiles():
                            allfiles =   allfiles,
                            )
 
+def fileload_sqlite(fullfilename):
+    # get keyword, header_field and tablename    ==> AGAIN 
+    pass
+
 @app.route('/file_process', methods=['GET', 'POST'])
 def file_process():
     if request.method == 'POST':
-        data = request.form
+#        data = request.form
+#        flash(str(data))
         time.sleep(1)
-        flash(str(data))
+        fullfilename  = request.form.get("fullfilename")
+        flash(str(fullfilename))
         return redirect(url_for('loadfiles'))
     else:
         flash("ERROR OCCURED -- TRY AGAIN")
         return redirect(url_for('loadfiles'))
-
-
-@app.route('/_file_process_TEST')
-def _file_process():
-    try:
-        dir = request.args.get('dir', '', type=str) 
-        file = request.args.get('file', '', type=str) 
-        keyword = request.args.get('keyword', '', type=str) 
-        if keyword == 'willem':
-            return jsonify(result='hello willem')
-        else:
-            return jsonify(result='not willem')
-    except Exception as e:
-        return str(e)
-
-@app.route('/background_process')
-def background_process():
-    try:
-        lang = request.args.get('proglang', 0, type=str)   
-        time.sleep(5)
-        if lang.lower() == 'python':
-            return jsonify(result='You are wise')
-        else:
-            return jsonify(result='Try again.')
-    except Exception as e:
-        return str(e)
-
 
 ############################################################################
 # SQLAlchemy
@@ -312,9 +294,9 @@ class SpoolkitAuthUserPermissioins(db.Model):
 
 class SpoolkitSapfiles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    keyword = db.Column(db.String(50))
-    header_field = db.Column(db.String(50))
-    table_name = db.Column(db.String(50))
+    keyword = db.Column(db.String(50), nullable=False)
+    header_field = db.Column(db.String(50), nullable=False)
+    table_name = db.Column(db.String(50), nullable=False)
     pre_script = db.Column(db.Text)
     post_script = db.Column(db.Text)
 
@@ -330,14 +312,12 @@ class SpoolkitConnections(db.Model):
     username = db.Column(db.Text)
     password = db.Column(db.Text)
 
-
 db.create_all()
 
 # Add some TEST entries
 rec1 = SpoolkitReports(name='Show date', script='select date()', shortcode='1', is_active=True)
 rec2 = SpoolkitReports(name='Show list of reports', script='select * from spoolkit_reports', shortcode='M2', is_active=True)
-rec3 = SpoolkitReports(name='List of sap_files', script='select * from spoolkit_sapfiles', shortcode='K2', is_active=True)
-db.session.add_all([rec1, rec2, rec3])
+db.session.add_all([rec1, rec2])
 db.session.commit()
 
 ############################################################################
@@ -375,8 +355,8 @@ admin.add_view(FileView(name='Close', endpoint='close', category='App'))
 admin.add_view(ModelView(SpoolkitUsers, db.session))
 
 # open up browser
-webbrowser.open('http://localhost:9090/', new=2)
+webbrowser.open('http://localhost:9119/', new=2)
 
 # Run DEV server
 if __name__ == "__main__":
-    app.run(port=9090, host='0.0.0.0', debug=True, use_reloader=True)
+    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
