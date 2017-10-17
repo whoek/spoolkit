@@ -20,6 +20,7 @@ from os.path import isfile, join, getsize, getctime
 import sys
 import sqlite3
 import webbrowser
+import string
 
 from flask_admin import Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
@@ -228,18 +229,69 @@ def loadfiles():
                            allfiles =   allfiles,
                            )
 
+def ensure_dir(f):
+    """
+    http://stackoverflow.com/questions/273192/check-if-a-directory-exists-and-create-it-if-necessary
+    """
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+        os.makedirs(d)
+
 def fileload_sqlite(fullfilename):
+    header_line = 0
+    field_len = 0
+    line_count = 0
+    start_time = 1     #  change this
+    field_tuple = []
+
+    START = 0
+    GOTKEY = 1
+    GOTHEADER = 2
+
+    step = START
+    
+    start_time = time.time()
+    try:
+        input = file(os.path.abspath(fullfilename))
+        #f = codecs.open(os.path.abspath(input_file), "r",encoding='ascii')
+    except IOError as e:
+        print("({})".format(e))
+
+    for line in input.readlines():
+        line_count += 1
+        line = string.replace(line,"\\","")
+        try:
+            line = line.encode('utf8', 'replace')
+            line = line.encode('ascii', 'replace')
+        except:
+            # http://stackoverflow.com/questions/2743070/removing-non-ascii-characters-from-a-string-using-python-django
+            stripped = stripped = (c for c in line if 0 < ord(c) < 127)
+            line = ''.join(stripped)
+
     # get keyword, header_field and tablename    ==> AGAIN 
-    pass
+
+    # create SQL and TXT file
+
+    # move the file to archive
+#    to_dir = mypath + '/archive/' + time.strftime('%Y_%m_%d') + '/'
+#    ensure_dir(to_dir)
+#    shutil.move(mypath + '/' + str(file_name), to_dir + '/' + str(file_name))
+#    shutil.copy(mypath + '/' + str(file_name), to_dir + '/' + str(file_name))
+
+# write summary in a log file and return ID
+    duration = (time.time() - start_time)
+    return (line_count, duration)
 
 @app.route('/file_process', methods=['GET', 'POST'])
 def file_process():
     if request.method == 'POST':
+        linecount = ''
 #        data = request.form
 #        flash(str(data))
-        time.sleep(1)
+#        time.sleep(1)
         fullfilename  = request.form.get("fullfilename")
-        flash(str(fullfilename))
+        (linecount, duration)  = fileload_sqlite(fullfilename)
+        flash(str(fullfilename) + ' linecount = ' + str(linecount) + 'duration = ' + str(duration))
         return redirect(url_for('loadfiles'))
     else:
         flash("ERROR OCCURED -- TRY AGAIN")
