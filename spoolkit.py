@@ -14,6 +14,7 @@ https://stackoverflow.com/questions/19516767/controlling-flask-server-from-comma
 from flask import Flask, render_template, g, request, Markup, jsonify, flash, redirect, url_for
 import markdown
 import time
+import timeit
 import os
 from os import listdir
 from os.path import isfile, join, getsize, getctime
@@ -21,6 +22,7 @@ import sys
 import sqlite3
 import webbrowser
 import string
+import shutil
 
 from flask_admin import Admin, BaseView, expose
 from flask_sqlalchemy import SQLAlchemy
@@ -106,8 +108,9 @@ def insert_tags(text):
     """
     returns the SQL table & markup text of a block of text
 
-    mode 00 == Markdown  [DEFAULT]
-    mode 01 == sql       SQL table
+    mode 00 -- text //  Markdown  [DEFAULT]
+    mode 01 -- sql       SQL table
+    mode 02 -- file      (XLS file -- FUTURE USE)
     mode 03 == snippit   [FUTURE USE]
     """
     mode = '00'     # default
@@ -214,6 +217,7 @@ def loadfiles():
 
             # check if file is setup.  Add tablename only if both were found
             for sapfile in sapfile_setup:
+                pass
                 if sapfile.keyword.lower() in head:
                     t_file["keyword"] = sapfile.keyword.lower()
                 if sapfile.header_field.lower() in head:
@@ -237,61 +241,100 @@ def ensure_dir(f):
     if not os.path.exists(d):
         os.makedirs(d)
 
-def fileload_sqlite(fullfilename):
-    header_line = 0
-    field_len = 0
-    line_count = 0
-    start_time = 1     #  change this
-    field_tuple = []
+def fileload_sqlite(fullfilename, sapfile_setup):
 
+    DELIMIT = '|'
+    MAX_SEARCH = 100    # after __ lines, stop searching for key or header field
     START = 0
-    GOTKEY = 1
-    GOTHEADER = 2
+    GOT_KEY = 1
+    GOT_HEADER = 2
+    step = START    
 
-    step = START
-    
-    start_time = time.time()
+    status = {}
+    start_time = timeit.default_timer()
+    linenum = 0
+
     try:
         input = file(os.path.abspath(fullfilename))
+        status["mypath"] = os.path.dirname(fullfilename)
+        status["myfile"] = os.path.basename(fullfilename)
         #f = codecs.open(os.path.abspath(input_file), "r",encoding='ascii')
+        for line in input.readlines():
+            linenum += 1
+            # remove all non-ascii characters
+            line = string.replace(line,"\\","").strip()
+            try:
+                line = line.encode('utf8', 'replace')
+                line = line.encode('ascii', 'replace')
+            except:
+                # http://stackoverflow.com/questions/2743070/removing-non-ascii-characters-from-a-string-using-python-django
+                stripped = stripped = (c for c in line if 0 < ord(c) < 127)
+                line = ''.join(stripped)
+
+            if step == GOT_HEADER:
+                splitline = string.splitfields(line,DELIMIT)
+            elif step == START:
+                for sapfile in sapfile_setup:
+                    if sapfile["keyword"].lower() in line.lower():     # found KEYWORD                        
+                        status["linenum_keyword"] = linenum
+                        status["keyword"] = sapfile["keyword"].lower()
+                        step = GOT_KEY
+                    elif linenum > MAX_SEARCH:
+                        break
+
+            elif step == GOT_KEY:
+                for sapfile in sapfile_setup:
+                    if sapfile["header_field"].lower() in line.lower():
+                        # Found HEADER
+                        status["header_field"] = sapfile["header_field"].lower()
+                        status["linenum_header_field"] = linenum
+                        status["table_name"] = sapfile["table_name"].lower()
+                        splitline = string.splitfields(line,DELIMIT)
+                        status["header_fields"] = splitline
+                        status["header_fields_count"] = len(splitline)
+#                        field_tuple, value_tuple = get_fields(splitline)
+#                field_len = len(field_tuple)
+#       s = "\t".join(str(x).strip(' \t\n') for x in field_tuple) + '\n'
+
+                    elif linenum > MAX_SEARCH:
+                        break
+
+        input.close()
+        status["linenum_end"] = linenum
+
+        # create SQL and TXT file
+
+        # move the file to archive
+        to_dir = status["mypath"] + '/archive/' + time.strftime('%Y_%m_%d') + '/'
+        ensure_dir(to_dir)
+    #    shutil.move(fullfilename, to_dir + '/' + str(status["myfile"]))
+        shutil.copy(fullfilename, to_dir + '/' + str(status["myfile"]))
+
+    # write summary in a log file and return ID
+
     except IOError as e:
         print("({})".format(e))
 
-    for line in input.readlines():
-        line_count += 1
-        line = string.replace(line,"\\","")
-        try:
-            line = line.encode('utf8', 'replace')
-            line = line.encode('ascii', 'replace')
-        except:
-            # http://stackoverflow.com/questions/2743070/removing-non-ascii-characters-from-a-string-using-python-django
-            stripped = stripped = (c for c in line if 0 < ord(c) < 127)
-            line = ''.join(stripped)
-
-    # get keyword, header_field and tablename    ==> AGAIN 
-
-    # create SQL and TXT file
-
-    # move the file to archive
-#    to_dir = mypath + '/archive/' + time.strftime('%Y_%m_%d') + '/'
-#    ensure_dir(to_dir)
-#    shutil.move(mypath + '/' + str(file_name), to_dir + '/' + str(file_name))
-#    shutil.copy(mypath + '/' + str(file_name), to_dir + '/' + str(file_name))
-
-# write summary in a log file and return ID
-    duration = (time.time() - start_time)
-    return (line_count, duration)
+    status["duration"] = str(timeit.default_timer() - start_time)
+    return status
 
 @app.route('/file_process', methods=['GET', 'POST'])
 def file_process():
     if request.method == 'POST':
-        linecount = ''
-#        data = request.form
-#        flash(str(data))
 #        time.sleep(1)
+#   DELETE THIS WHEN DONE #TODO
+#   NEED TO PULL FROM DATABASE
+        sapfile_setup = [{"keyword": 'willem', "header_field": 'zzzz', "table_name": 'willem_zzzz'},
+            {"keyword": 'willem', "header_field": 'field', "table_name": 'willem_field'},
+            {"keyword": 'willem', "header_field": 'zzz', "table_name": 'willem_zzz'},
+            ]
+
         fullfilename  = request.form.get("fullfilename")
-        (linecount, duration)  = fileload_sqlite(fullfilename)
-        flash(str(fullfilename) + ' linecount = ' + str(linecount) + 'duration = ' + str(duration))
+        if fullfilename is None:
+            flash('No file was selected')
+        else:
+            status  = fileload_sqlite(fullfilename, sapfile_setup)
+            flash(str(status))
         return redirect(url_for('loadfiles'))
     else:
         flash("ERROR OCCURED -- TRY AGAIN")
