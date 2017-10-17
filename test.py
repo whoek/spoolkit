@@ -8,6 +8,38 @@ from os.path import isfile, join, getsize, getctime
 import sys
 
 
+def make_field_unique(f1, field):
+    """ Make sure the field is not same as already used field
+    If it is same make the field z1, z2,.....etc
+    """
+    unique = 0
+    c = 1
+    field = string.lower(field)
+    if f1 == [] and field == '':
+        field = 'z1'
+    while not unique:
+        unique = 1
+        for f in f1:
+            if field == string.lower(f) or field == '':
+                field = 'z' + str(c)
+                c += 1
+                unique = 0
+    return field
+
+def get_fields(splitline):
+    ft = []     # field_tuple, "(field1, field2, ...)"
+    # build tuple of all fields
+    for field in splitline:
+        field = string.strip(field)
+        #TODO   only allow ascii
+        #TODO   start with CHAR not number
+        invalid_chars = "\/~!@#$%^&*()+- .,'`|{}?<>;:"
+        for c in invalid_chars:
+            field = string.replace(field,c,"")
+        field = make_field_unique(ft, field)   # ft = columns to date, field = new
+        ft.append(string.strip(field))
+    return tuple(ft)
+
 def ensure_dir(f):
     """
     http://stackoverflow.com/questions/273192/check-if-a-directory-exists-and-create-it-if-necessary
@@ -65,11 +97,11 @@ def fileload_sqlite(fullfilename, sapfile_setup):
                         status["linenum_header_field"] = linenum
                         status["table_name"] = sapfile["table_name"].lower()
                         splitline = string.splitfields(line,DELIMIT)
-                        status["header_fields"] = splitline
-                        status["header_fields_count"] = len(splitline)
-#                        field_tuple, value_tuple = get_fields(splitline)
-#                field_len = len(field_tuple)
-#       s = "\t".join(str(x).strip(' \t\n') for x in field_tuple) + '\n'
+                        status["header_fields_init"] = splitline
+                        status["header_fields"] = get_fields(splitline)
+                        status["header_fields_count"] = len(status["header_fields"])
+                        s = "\t".join(str(x).strip(' \t\n') for x in status["header_fields"]) + '\n'              
+                        status["s"] = s
 
                     elif linenum > MAX_SEARCH:
                         break
@@ -82,8 +114,8 @@ def fileload_sqlite(fullfilename, sapfile_setup):
         # move the file to archive
         to_dir = status["mypath"] + '/archive/' + time.strftime('%Y_%m_%d') + '/'
         ensure_dir(to_dir)
-        shutil.move(fullfilename, to_dir + '/' + str(status["myfile"]))
-    #    shutil.copy(fullfilename, to_dir + '/' + str(status["myfile"]))
+    #    shutil.move(fullfilename, to_dir + '/' + str(status["myfile"]))
+        shutil.copy(fullfilename, to_dir + '/' + str(status["myfile"]))
 
     # write summary in a log file and return ID
 
