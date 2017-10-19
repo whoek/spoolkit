@@ -2,11 +2,8 @@
     Spoolkit
     :copyright: (c) 2017 by Willem Hoek.
 
-    flash options:  
-    success --> green
-    info    --> blue
-    warning --> orange
-    danger -->  red
+
+    Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
 
 https://stackoverflow.com/questions/19516767/controlling-flask-server-from-commandline-gui
 
@@ -317,6 +314,23 @@ def fileload_sqlite(fullfilename, sapfile_setup):
     status["duration"] = str(timeit.default_timer() - start_time)
     return status
 
+def fileload_success_message(status):
+    message = """
+    <strong>Success</strong><br><br>
+    Loaded: <samp>{}</samp>   ({} lines)<br><br>
+    Keyword: <samp>{}</samp>   (in line {})<br>
+    Header_field: <samp>{}</samp> (in line {}<br> 
+    DB Table: <samp>{}</samp>  ({} fields)<br><br>
+    All done in {} seconds
+    """.format(status.get("myfile"),status.get("linenum_end"), 
+        status.get("keyword"), status.get("linenum_keyword"),
+        status.get("header_field"), status.get("linenum_header_field"), status.get("table_name"),
+        status.get("header_fields_count"), status.get("duration") )
+    return message
+
+
+
+
 
 #######################################################################################
 #
@@ -326,7 +340,6 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
 @app.route("/")
 def root():
-#    flash(str(app.config))
     reports = SpoolkitReports.query.all()
     return render_template('spoolkit_index.html',
                            reports=reports)
@@ -410,17 +423,25 @@ def loadfiles():
 
 @app.route('/file_process', methods=['GET', 'POST'])
 def file_process():
+    """
+    Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
+    """
     if request.method == 'POST':
         sapfile_setup = SpoolkitSapfiles.query.all()
         fullfilename  = request.form.get("fullfilename")
         if fullfilename is None:
-            flash('No file was selected')
+            message = Markup("<strong>No file was selected</strong>")
+            flash(message,'danger')
         else:
             status = fileload_sqlite(fullfilename, sapfile_setup)
-            flash(str(status) + str(app.config))
+            if status.get("sql_result") == 0:
+                message = Markup(fileload_success_message(status))
+                flash(message, 'success')
+            else:
+                flash(str(status), 'danger')
         return redirect(url_for('loadfiles'))
     else:
-        flash("ERROR OCCURED -- TRY AGAIN")
+        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
         return redirect(url_for('loadfiles'))
 
 ############################################################################

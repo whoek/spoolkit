@@ -162,11 +162,12 @@
     </div>
     <!-- End of navbar -->
 
-    {% with messages = get_flashed_messages() %}
+    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
       <!-- flash messages -->
-	    {% for message in messages %}
-      <div class="alert alert-info alert-dismissible" role="alert">
+	    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible" role="alert">
 		  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
 			{{message}}
 		  </div>
@@ -174,8 +175,11 @@
 	  {% endif %}
 	{% endwith %}
 
+
     {% block body %} {% endblock %}
 
+    {#      ########### comment start #####################
+      
     <br><br><br><br><br><br><br><br><br><br><br><br>
     <h3>BASE TEMPLATE STARTS HERE</h3>
     <p>My text goes here</p>
@@ -224,13 +228,11 @@
     </table>
 
 
+    ########### comment end ##################### #}
 
     <br/><br/><br/> Generated: {{ now }} <br><br><br>
-
-
   </div>
   <!-- /container -->
 
 </body>
-
 </html>
