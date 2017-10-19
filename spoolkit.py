@@ -278,7 +278,7 @@ def fileload_sqlite(fullfilename, sapfile_setup):
         
         if "header_fields_count" in status:
             sql_db = app.config['DATABASE']
-            sql_drop = "drop table if exists %s;\n\n" % (status["table_name"],)
+            sql_drop = "drop table if exists {};\n\n".format(status["table_name"])
             sql_create = create_sqlite_table(status)
             sql_import = ".import {}  {} ".format(csvfile, status["table_name"])
             
@@ -286,13 +286,12 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             sql_result = subprocess.call(["sqlite3.exe", sql_db, 
                 sql_drop, sql_create, ".separator '\t'",sql_import])  
 
-            
             status["sql_db"] = sql_db
             status["sql_result"] = sql_result
             status["sql_drop"] = sql_drop
             status["sql_create"] = sql_create
             status["sql_import"] = sql_import
-            
+
             try:
                 os.remove(csvfile)
             except:
@@ -316,21 +315,18 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
 def fileload_success_message(status):
     message = """
-    <strong>Success</strong><br><br>
-    Loaded: <samp>{}</samp>   ({} lines)<br><br>
-    Keyword: <samp>{}</samp>   (in line {})<br>
-    Header_field: <samp>{}</samp> (in line {}<br> 
-    DB Table: <samp>{}</samp>  ({} fields)<br><br>
-    All done in {} seconds
-    """.format(status.get("myfile"),status.get("linenum_end"), 
-        status.get("keyword"), status.get("linenum_keyword"),
-        status.get("header_field"), status.get("linenum_header_field"), status.get("table_name"),
-        status.get("header_fields_count"), status.get("duration") )
+    <strong>File <samp>{}</samp> loaded in table <samp>{}</samp></strong><br><br>
+    {:,} lines<br>
+    {} fields<br><br>
+    Key field in file: <samp>{}</samp>   (in line {:,})<br>
+    Column Field in file: <samp>{}</samp> (in line {:,}<br><br> 
+    All done in {:.3f} seconds
+    """.format(status.get("myfile"),status.get("table_name"),
+        int(status.get("linenum_end")), int(status.get("header_fields_count")), 
+        status.get("keyword"), int(status.get("linenum_keyword")),
+        status.get("header_field"), int(status.get("linenum_header_field")), 
+        float(status.get("duration")) )
     return message
-
-
-
-
 
 #######################################################################################
 #
@@ -437,6 +433,7 @@ def file_process():
             if status.get("sql_result") == 0:
                 message = Markup(fileload_success_message(status))
                 flash(message, 'success')
+                flash(status, 'success')
             else:
                 flash(str(status), 'danger')
         return redirect(url_for('loadfiles'))
@@ -556,4 +553,4 @@ admin.add_view(ModelView(SpoolkitUsers, db.session))
 # Open browser and Run DEV server
 if __name__ == "__main__":
     webbrowser.open('http://localhost:9119/', new=2)
-    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
+    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=False)
