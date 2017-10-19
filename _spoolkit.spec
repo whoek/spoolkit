@@ -2,6 +2,10 @@
 
 block_cipher = None
 
+ADD_BINARY = [
+        ( 'sqlite3.exe', '.' )
+]
+
 ADD_DATA = [
         ( 'templates', 'templates' ),        
         ( 'templates\\admin', 'templates\\admin' ),
@@ -45,7 +49,7 @@ ADD_DATA = [
 
 a = Analysis(['spoolkit.py'],
              pathex=['C:\\data\\bitbucket\\spoolkit'],
-             binaries=[],
+             binaries=ADD_BINARY,
              datas=ADD_DATA,
              hiddenimports=['flask-admin'],
              hookspath=[],

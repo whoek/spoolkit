@@ -11,6 +11,7 @@
 https://stackoverflow.com/questions/19516767/controlling-flask-server-from-commandline-gui
 
 """
+import  email.mime.message, email.mime.image, email.mime.text, email.mime.multipart, email.mime.audio
 from flask import Flask, render_template, g, request, Markup, jsonify, flash, redirect, url_for
 from flask_admin import Admin, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
@@ -28,22 +29,26 @@ import time
 import timeit
 import webbrowser
 
-os.sep = '/'      
-APP_PATH = os.path.abspath(".").replace('\\','/')          # application path
 
-if hasattr(sys, '_MEIPASS'):
+# APP_PATH is where DB should be saved. Same as .py or EXE
+if getattr(sys, 'frozen', False):
+    APP_PATH = os.path.dirname(sys.executable).replace('\\','/')
     os.chdir(sys._MEIPASS)                 # change current working directory
+elif __file__:
+    APP_PATH = os.path.dirname(__file__).replace('\\','/')
+
+DB_FILE = 'sap_spoolkit.db'
 
 app = Flask(__name__)
 app.config.update(dict(
-    DATABASE=os.path.join(APP_PATH, 'sap_spoolkit.db').replace('\\','/'),
+    DATABASE=os.path.join(APP_PATH, DB_FILE).replace('\\','/'),
     SQLALCHEMY_DATABASE_URI='sqlite:///' +
-    os.path.join(APP_PATH, 'sap_spoolkit.db').replace('\\','/'),
+        os.path.join(APP_PATH, DB_FILE).replace('\\','/'),
     SQLALCHEMY_TRACK_MODIFICATIONS=True,
     SECRET_KEY='F34TF$($e34Q',
     USERNAME='admin',
     PASSWORD='default',
-    APP_PATH=APP_PATH,
+    APP_PATH=APP_PATH, 
     CWD_PATH=os.getcwd().replace('\\','/'),
 ))
 
@@ -275,14 +280,17 @@ def fileload_sqlite(fullfilename, sapfile_setup):
         csv.close()
         
         if "header_fields_count" in status:
+            sql_db = app.config['DATABASE']
             sql_drop = "drop table if exists %s;\n\n" % (status["table_name"],)
             sql_create = create_sqlite_table(status)
             sql_import = ".import {}  {} ".format(csvfile, status["table_name"])
             
             # subprocess starting now
-            sql_result = subprocess.call(["sqlite3.exe",  "sap_spoolkit.db", 
+            sql_result = subprocess.call(["sqlite3.exe", sql_db, 
                 sql_drop, sql_create, ".separator '\t'",sql_import])  
 
+            
+            status["sql_db"] = sql_db
             status["sql_result"] = sql_result
             status["sql_drop"] = sql_drop
             status["sql_create"] = sql_create
@@ -318,6 +326,7 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
 @app.route("/")
 def root():
+#    flash(str(app.config))
     reports = SpoolkitReports.query.all()
     return render_template('spoolkit_index.html',
                            reports=reports)
@@ -408,7 +417,7 @@ def file_process():
             flash('No file was selected')
         else:
             status = fileload_sqlite(fullfilename, sapfile_setup)
-            flash(str(status))
+            flash(str(status) + str(app.config))
         return redirect(url_for('loadfiles'))
     else:
         flash("ERROR OCCURED -- TRY AGAIN")
@@ -523,9 +532,7 @@ admin.add_view(FileView(name='Help', endpoint='help', category='App'))
 admin.add_view(FileView(name='Close', endpoint='close', category='App'))
 admin.add_view(ModelView(SpoolkitUsers, db.session))
 
-# open up browser
-webbrowser.open('http://localhost:9119/', new=2)
-
-# Run DEV server
+# Open browser and Run DEV server
 if __name__ == "__main__":
+    webbrowser.open('http://localhost:9119/', new=2)
     app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
