@@ -1,7 +1,7 @@
 {% extends "spoolkit_base.html" %}
 
 {% block body %}
-<h2>Reports</h2>
+<h3>Reports</h3>
 
   {% for report in reports %}
     <a href=/r/{{ report.id }}>{{ report.name }}</a> -- {{ report.shortcode|lower }} <br>

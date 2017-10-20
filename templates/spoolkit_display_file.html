@@ -1,0 +1,29 @@
+{% extends "spoolkit_base.html" %} {% block datatable_init %} {% endblock %} {% block body %}
+<h3>Display file</h3>
+
+
+<div class="row">
+    <div class="col-md-2">Filename:</div>
+    <div class="col-md-10"><samp>{{ filename}}</samp></div>
+</div>
+<br>
+
+<div class="row">
+    <div class="col-md-2">Keyword</div>
+    <div class="col-md-10"><samp>{{ keyword }}</samp></div>
+</div>
+
+<div class="row">
+    <div class="col-md-2">Header field</div>
+    <div class="col-md-10"><samp>{{ header_field }}</samp></div>
+</div>
+
+<div class="row">
+        <div class="col-md-2">Table name</div>
+        <div class="col-md-10"><samp>{{ table_name }}</samp></div>
+</div>
+
+<br><a href="/admin/filesetup/">Setup file format</a><br><br>
+
+<samp>{{ top100 }}</samp>
+{% endblock %}

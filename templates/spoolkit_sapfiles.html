@@ -1,48 +1,55 @@
 {% extends "spoolkit_base.html" %} {% block end_of_header %} {% endblock %} {% block body %}
 
-<h2>SAP files to process</h2>
+<h3>SAP files to process</h3>
 
-<blockquote>Select the file you want to load in database.</blockquote>
-
+Select the file you want to load in database and press
+<kbd>Load file</kbd>
+<br> Else click on file name to view sample.
+<br>
+<br>
 <form action="/file_process" method="post">
 
     <button type="submit" name="1" id="myButton" data-loading-text="Loading..." class="btn btn-primary btn-lg" autocomplete="off">
-    Load file</button><br><br>
+        Load file</button>
+    <br>
+    <br> {% for d in allfiles %}
 
-{% for d in allfiles %} 
-            
-<p>File path: <samp>{{ d.directory }}</samp></p>
+    <p>File path:
+        <samp>{{ d.directory }}</samp>
+    </p>
 
-<table class="table table-condensed table-bordered"> 
-<tr>
-    <th class="text-center">Load</th>
-    <th>File name</th>
-    <th>File date</th>
-    <th class="text-center">File size - MB</th>
-    <th>Key field in file</th>
-    <th>Column field in file</th>
-    <th>DB Table</th>
-</tr>        
-    {% for f in d.files %}
-    <tr>
-        <td class="text-center">
-        {% if f.table_name is defined %}<input type="radio" name="fullfilename" value="{{ f.fullfilename }}">{% endif %}
-        </td>            
-        <td><a href="#">{{ f.filename }}</a></td>
-        <td>{{ f.filedate }}</td>
-        <td class="text-center">{{ f.filesize }}</td>
-        <td> {{ f.keyword }} </td>
-        <td>{{ f.header_field }} </td>
-        <td>{{ f.table_name }} </td>
-    </tr>          
-    {% endfor %} 
-</table>
-{% endfor %} 
+    <table class="table table-condensed table-bordered">
+        <tr>
+            <th class="text-center">Load</th>
+            <th>File name</th>
+            <th>File date</th>
+            <th class="text-center">File size - MB</th>
+            <th>Key field in file</th>
+            <th>Column field in file</th>
+            <th>DB Table</th>
+        </tr>
+        {% for f in d.files %}
+        <tr>
+            <td class="text-center">
+                {% if f.table_name is defined %}
+                <input type="radio" name="fullfilename" value="{{ f.fullfilename }}">{% endif %}
+            </td>
+            <td>
+                <a href="/display_file?filename={{ f.fullfilename }}&keyword={{ f.keyword }}&header_field={{ f.header_field }}&table_name={{ f.table_name }}">{{ f.filename }}</a>
+            </td>
+            <td>{{ f.filedate }}</td>
+            <td class="text-center">{{ f.filesize }}</td>
+            <td>{{ f.keyword }}</td>
+            <td>{{ f.header_field }}</td>
+            <td>{{ f.table_name }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
 
-    </form>    
-    <script type="text/javascript">
-        $('#myButton').on('click', function () {
-            var $btn = $(this).button('loading')
-        })
-    </script>
-{% endblock %}
+</form>
+<script type="text/javascript">
+    $('#myButton').on('click', function () {
+        var $btn = $(this).button('loading')
+    })
+</script> {% endblock %}

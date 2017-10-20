@@ -100,40 +100,22 @@
             <ul class="dropdown-menu">
               <li><a href="/admin/setup/">Build Reports</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="/admin/filesetup/">Define input file format</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="#">Run Multiple Reports</a></li>
-              <li><a href="#">Report Statistics</a></li>
+              <li><a href="/admin/filesetup/">Define SAP file format</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="/admin/appsettings">General Settings</a></li>
-              <li><a href="#">Database connections</a></li>
             </ul>
           </li>
 
-          <!-- Tasks -->
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tasks<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#">Configure Tasks</a></li>
-              <li><a href="#">Manage Tasks</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="#">Task Log</a></li>
-            </ul>
-          </li>
-        
           <!-- Help -->
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
             <ul class="dropdown-menu">
               <li><a href="#">Documentation</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="#">Give Feedback</a></li>
               <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new" target="_blank">Report an Issue</a></li>
               <li><a href="#">Check for Updates</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="/shutdown">Close Application</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="#">About</a></li>
             </ul>
           </li>
         </ul>
@@ -169,7 +151,7 @@
 	    {% for category, message in messages %}
       <div class="alert alert-{{ category }} alert-dismissible" role="alert">
 		  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-			{{message}}
+			{{ message }}
 		  </div>
 		{% endfor %}
 	  {% endif %}

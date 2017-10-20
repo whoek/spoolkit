@@ -4,62 +4,69 @@
 <div class="container">
 
 
-  <!-- Navbar -->
-  <div class="header clearfix">
-    <nav>
-      <ul class="nav nav-pills navbar-left">
-        <li role="presentation" class="active"><a href="/">Home</a></li>
-        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Load File</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="/admin/filesetup/">Define File Format</a></li>
+    <!-- Navbar -->
+    <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills navbar-left">
+  
+            <!-- Home -->  
+            <li role="presentation" class="active"><a href="/">Home</a></li>
+  
+            <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+  
+            <!-- Load files -->
+            <li role="presentation"><a href="/loadfiles">Load files</a></li>
+  
+            <!-- Setup -->
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Setup<span class="caret"></a>
+              <ul class="dropdown-menu">
+                <li><a href="/admin/setup/">Build Reports</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="/admin/filesetup/">Define SAP file format</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="/admin/appsettings">General Settings</a></li>
+              </ul>
+            </li>
+  
+            <!-- Help -->
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Documentation</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new" target="_blank">Report an Issue</a></li>
+                <li><a href="#">Check for Updates</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="/shutdown">Close Application</a></li>
+              </ul>
+            </li>
           </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="/admin/setup/">Build Reports</a></li>
-            <li><a href="#">Report Statistics</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Run Multiple  Reports</a></li>
-            <li><a href="#">Report Cache Management</a></li>
+          
+          <!-- Search -->
+          <ul class="nav nav-pills navbar-right">
+               <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          </button>
+          <a class="navbar-brand" href="http://sap123.com">Neon</a>
+        </div>
+  
+              
+            <form class="navbar-form navbar-left">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Shortcode">
+                <div class="input-group-btn">
+                  <button class="btn btn-success" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                </div>
+              </div>
+            </form>
           </ul>
-        </li>
-
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Documentation</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Give Feedback</a></li>
-            <li><a href="https://bitbucket.org/matimba/spoolkit/issues/new">Report an Issue</a></li>
-            <li><a href="#">Check for Updates</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="/admin/appsettings">Settings</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="/shutdown">Close Application</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">About</a></li>
-          </ul>
-        </li>
-      </ul>
-
-      <ul class="nav nav-pills pull-right">
-        <form class="navbar-form navbar-left">
-
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Shortcode">
-          </div>
-          <button type="submit" class="btn btn-default">Go!</button>
-        </form>
-      </ul>
-    </nav>
-  </div>
-  <!-- End of navbar -->
-
+  
+        </nav>
+      </div>
+      <!-- End of navbar -->
+    
 
 
 

@@ -9,9 +9,10 @@
 {% endblock %}
 
 {% block body %}
-<h3>{{ report.shortcode|lower }} - {{ report.name }}</h3>
-<hr>
-    <a href=/admin/setup/edit/?url=%2Fadmin%2Fsetup%2F&id={{ report.id }}>Edit {{ report.id }}</a>
-        <br><br><br>
+<h3>{{ report.name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>
+        <a href=/admin/setup/edit/?url=%2Fadmin%2Fsetup%2F&id={{ report.id }}>edit</a>    
+</small></h3>
+    
+<br><br>
 {{ md_text }}
 {% endblock %}

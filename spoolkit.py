@@ -433,13 +433,43 @@ def file_process():
             if status.get("sql_result") == 0:
                 message = Markup(fileload_success_message(status))
                 flash(message, 'success')
-                flash(status, 'success')
+#                flash(status, 'success')
             else:
                 flash(str(status), 'danger')
         return redirect(url_for('loadfiles'))
     else:
         flash("ERROR OCCURED -- TRY AGAIN", 'danger')
         return redirect(url_for('loadfiles'))
+
+
+@app.route('/display_file', methods=['GET'])
+def display_file():
+    """
+    Display TXT file in Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
+    """
+    filename = request.args.get('filename')
+    header_field = request.args.get('header_field')
+    keyword = request.args.get('keyword')
+    table_name = request.args.get('table_name')
+    
+    input = file(filename)
+    linenum = 0
+    top100 = ''
+    for line in input.readlines():
+        linenum += 1
+        top100 += '<kbd>{}</kbd> {}<br>'.format(linenum, line)
+        if linenum == 100:
+            break
+    input.close()
+    
+    return render_template('spoolkit_display_file.html',
+            filename = filename.replace('/','\\'),
+            keyword = keyword,
+            header_field = header_field,
+            table_name = table_name,
+            top100 = Markup(top100),
+                           )
+
 
 ############################################################################
 # SQLAlchemy
@@ -553,4 +583,4 @@ admin.add_view(ModelView(SpoolkitUsers, db.session))
 # Open browser and Run DEV server
 if __name__ == "__main__":
     webbrowser.open('http://localhost:9119/', new=2)
-    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=False)
+    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
