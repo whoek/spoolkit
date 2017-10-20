@@ -2,11 +2,6 @@
     Spoolkit
     :copyright: (c) 2017 by Willem Hoek.
 
-
-    Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
-
-https://stackoverflow.com/questions/19516767/controlling-flask-server-from-commandline-gui
-
 """
 import  email.mime.message, email.mime.image, email.mime.text, email.mime.multipart, email.mime.audio
 from flask import Flask, render_template, g, request, Markup, jsonify, flash, redirect, url_for
@@ -26,6 +21,9 @@ import time
 import timeit
 import webbrowser
 
+DB_FILE = 'sap_spoolkit.db'
+SAP_DIR = 'sapdir'
+VERSION = '0.3'
 
 # APP_PATH is where DB should be saved. Same as .py or EXE
 if getattr(sys, 'frozen', False):
@@ -33,8 +31,6 @@ if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)                 # change current working directory
 elif __file__:
     APP_PATH = os.path.dirname(__file__).replace('\\','/')
-
-DB_FILE = 'sap_spoolkit.db'
 
 app = Flask(__name__)
 app.config.update(dict(
@@ -52,7 +48,6 @@ app.config.update(dict(
 db = SQLAlchemy(app)   # used by flask-admin
 
 # database usage
-
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -85,7 +80,6 @@ def write_block(mode, block, table_count):
     elif mode == '01':   # sql
         try:
             result = db.engine.execute(block)
-#            result = db.engine.execute("SELECT 'willem' as 'name', date('now') as 'date';")
             html = '<table id="table' + \
                 str(table_count) + \
                 '" class="table table-striped table-bordered" cellspacing="0" width="100%"><thead><tr>'
@@ -98,7 +92,6 @@ def write_block(mode, block, table_count):
                     html += '<td>' + str(field) + '</td>'
                 html += '</tr>'
             html += '</tbody></table>'
-#            html = block
 
         except Exception as e:
             html = '''<p class="bg-danger">''' + str(e) + '</p>'
@@ -315,7 +308,7 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
 def fileload_success_message(status):
     message = """
-    <strong>File <samp>{}</samp> loaded in table <samp>{}</samp></strong><br><br>
+    <h4>File <samp>{}</samp> loaded in table <samp>{}</samp></h4><br>
     {:,} lines<br>
     {} fields<br><br>
     Key field in file: <samp>{}</samp>   (in line {:,})<br>
@@ -336,7 +329,9 @@ def fileload_success_message(status):
 
 @app.route("/")
 def root():
-    reports = SpoolkitReports.query.all()
+#    reports = SpoolkitReports.query.all()
+    reports = SpoolkitReports.query.filter_by(is_active=1).all()
+    
     return render_template('spoolkit_index.html',
                            reports=reports)
 
@@ -376,41 +371,51 @@ def shutdown():
 
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
-    sapfile_setup = SpoolkitSapfiles.query.all()
-    sapfile_dir = SpoolkitSettings.query.filter_by(key='sapfile_dir').all()
-    allfiles = []
-    for sapdir in sapfile_dir:
-        mypath = sapdir.value
-        t_directory = {}
-        t_directory["directory"] = mypath
-        file_list = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
-        t_allfiles = []
-        for f in file_list:
-            t_file = {}
-            t_file["filename"] = f
-            t_file["fullfilename"] = str(os.path.join(mypath, f).replace('\\','/'))
-            t_file["filedate"] = str(time.ctime(getctime(mypath + '/' + f)))
-            t_file["filesize"] = str(os.path.getsize(mypath + '/' + f)/1000000)
+    try:
+        sapfile_setup = SpoolkitSapfiles.query.all()
+        sapfile_dir = SpoolkitSettings.query.filter_by(key=SAP_DIR).all()
+        allfiles = []
+        id = ''
+        for sapdir in sapfile_dir:
+            mypath = sapdir.value
+            t_directory = {}
+            t_directory["directory"] = mypath
+            id = sapdir.id
+            t_directory["id"] = sapdir.id
+            file_list = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+            t_allfiles = []
+            for f in file_list:
+                t_file = {}
+                t_file["filename"] = f
+                t_file["fullfilename"] = str(os.path.join(mypath, f).replace('\\','/'))
+                t_file["filedate"] = str(time.ctime(getctime(mypath + '/' + f)))
+                t_file["filesize"] = str(os.path.getsize(mypath + '/' + f)/1000000)
 
-            # get first 100 lines of file
-            ff = open(mypath + '/' + f,"r")
-            head = [ff.readline() for i in range(100)]    
-            head = str(head).lower()
-            ff.close()
+                # get first 100 lines of file
+                ff = open(mypath + '/' + f,"r")
+                head = [ff.readline() for i in range(100)]    
+                head = str(head).lower()
+                ff.close()
 
-            # check if file is setup.  Add tablename only if both were found
-            for sapfile in sapfile_setup:
-                pass
-                if sapfile.keyword.lower() in head:
-                    t_file["keyword"] = sapfile.keyword.lower()
-                if sapfile.header_field.lower() in head:
-                    t_file["header_field"] = sapfile.header_field.lower()
-                if ('header_field' in t_file.keys()) and ('keyword' in t_file.keys()):
-                    t_file["table_name"] = sapfile.table_name.lower()
-                    break
-            t_allfiles.append(t_file)
-        t_directory["files"] = t_allfiles
-        allfiles.append(t_directory)            
+                # check if file is setup.  Add tablename only if both were found
+                for sapfile in sapfile_setup:
+                    pass
+                    if sapfile.keyword.lower() in head:
+                        t_file["keyword"] = sapfile.keyword.lower()
+                    if sapfile.header_field.lower() in head:
+                        t_file["header_field"] = sapfile.header_field.lower()
+                    if ('header_field' in t_file.keys()) and ('keyword' in t_file.keys()):
+                        t_file["table_name"] = sapfile.table_name.lower()
+                        break
+                t_allfiles.append(t_file)
+            t_directory["files"] = t_allfiles
+            allfiles.append(t_directory)            
+    except Exception as e:
+        id = id
+        new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(id)
+        message = str(e) + '<br><br>Check in <strong>Value</strong> field below if directory is correct<br>'
+        flash(Markup(message), 'danger')
+        return redirect(new_url)
 
     return render_template('spoolkit_sapfiles.html',
                            allfiles =   allfiles,
@@ -426,7 +431,7 @@ def file_process():
         sapfile_setup = SpoolkitSapfiles.query.all()
         fullfilename  = request.form.get("fullfilename")
         if fullfilename is None:
-            message = Markup("<strong>No file was selected</strong>")
+            message = Markup("<h4>No file was selected</h4>")
             flash(message,'danger')
         else:
             status = fileload_sqlite(fullfilename, sapfile_setup)
@@ -447,20 +452,24 @@ def display_file():
     """
     Display TXT file in Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
     """
-    filename = request.args.get('filename')
-    header_field = request.args.get('header_field')
-    keyword = request.args.get('keyword')
-    table_name = request.args.get('table_name')
-    
-    input = file(filename)
-    linenum = 0
-    top100 = ''
-    for line in input.readlines():
-        linenum += 1
-        top100 += '<kbd>{}</kbd> {}<br>'.format(linenum, line)
-        if linenum == 100:
-            break
-    input.close()
+    try:
+        filename = request.args.get('filename')
+        keyword = request.args.get('keyword')
+        header_field = request.args.get('header_field')
+        table_name = request.args.get('table_name')
+        
+        input = file(filename)
+        linenum = 0
+        top100 = ''
+        for line in input.readlines():
+            linenum += 1
+            top100 += '<kbd>{}</kbd> {}<br>'.format(linenum, line)
+            if linenum == 100:
+                break
+        input.close()
+    except:
+        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+        return redirect(url_for('loadfiles'))
     
     return render_template('spoolkit_display_file.html',
             filename = filename.replace('/','\\'),
@@ -470,7 +479,36 @@ def display_file():
             top100 = Markup(top100),
                            )
 
+@app.route('/cd', methods=['GET'])
+def change_sap_directory():
+    """
+    Change directory of files to be loaded
+    """
+    try:
+        id = request.args.get('id')
+        new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(id)
+    except:
+        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+        return redirect(url_for('loadfiles'))
+    return redirect(new_url)
 
+
+@app.route('/newdir', methods=['GET'])
+def new_sap_directory():
+    """
+    New folder
+    """
+    try:
+        entry = SpoolkitSettings(key=SAP_DIR, value='C:\Documents\SAP\SAP GUI')
+        db.session.add_all([entry])
+        db.session.commit()
+        new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(entry.id)
+    except:
+        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+        return redirect(url_for('loadfiles'))
+    return redirect(new_url)
+    
+    
 ############################################################################
 # SQLAlchemy
 ############################################################################
@@ -490,11 +528,11 @@ class SpoolkitReportgroups(db.Model):
 class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_active = db.Column(db.Boolean, default=True)
-    name = db.Column(db.String(60))
+    name = db.Column(db.String(60), nullable=False)
     shortcode = db.Column(db.String(10))
     report_group = db.Column(db.String(10))
     connection = db.Column(db.String(50))
-    script = db.Column(db.UnicodeText)
+    script = db.Column(db.UnicodeText, nullable=False)
     cache_duration = db.Column(db.Integer, default=0)
 
 
@@ -558,12 +596,28 @@ class FileView(BaseView):
         return self.render('spoolkit_base.html')
 
 class ReportView(ModelView):
-    column_editable_list = ['is_active', 'shortcode']
+    column_editable_list = ['is_active', 'name']
     column_display_pk = True
+    column_exclude_list = ('report_group', 'connection', 'cache_duration','shortcode')
+    column_labels = dict(id='ID', is_active='Active', name='Report name', 
+        shortcode='Shortcode',script='Report contents',
+        )
+    column_descriptions = dict(
+        script='Report contents can either be --text or --sql',
+        shortcode='Quick access of reports [DEACTIVE]',
+        cache_duration='Time in seconds before report will be recalculated [DEACTIVE]',
+        )
 
 class SapFileView(ModelView):
-    #    column_editable_list = ['is_active', 'name']
     column_display_pk = True
+    column_editable_list = ['keyword', 'header_field','table_name']
+    column_descriptions = dict(
+        keyword='Field in file to uniquely identify type of file',
+        header_field='Field in file to identify the field names',
+        table_name='Database table name where data will be loaded',
+        pre_script='SQL statement that will run BEFORE the data is loaded',
+        post_script='SQL statement that will run AFTER the data was loaded',
+        )
 
 #admin = Admin(app, name='Spoolkit', template_mode='bootstrap3', base_template='index2.html')
 # Create admin with custom base template

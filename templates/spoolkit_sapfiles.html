@@ -2,20 +2,34 @@
 
 <h3>SAP files to process</h3>
 
-Select the file you want to load in database and press
-<kbd>Load file</kbd>
-<br> Else click on file name to view sample.
-<br>
-<br>
 <form action="/file_process" method="post">
+    {% if not allfiles %}
+    
+    Folder where the SAP text files that you downloaded via SAP GUI are stored<br><br>
+    <a href="/newdir">Select folder to use</a>
+    <br><br><br>
 
-    <button type="submit" name="1" id="myButton" data-loading-text="Loading..." class="btn btn-primary btn-lg" autocomplete="off">
-        Load file</button>
+    This can also be done via menu: <kbd>Setup</kbd> => <kbd>General Settings</kbd><br>
+    The <samp>Key</samp> must be <samp>sapdir</samp><br>
+    The <samp>Value</samp> is the directory where the SAP files are stored<br><br>
+    
+    {% else %}
+    Select the file you want to load in database and press
+    <kbd>Load file</kbd><br> 
+    Else click on file name to view sample.<br><br>    
+    <button type="submit" name="1" id="myButton" data-loading-text="Loading..." 
+    class="btn btn-primary btn-lg" autocomplete="off">Load file</button>
+    {% endif %}
+    
     <br>
     <br> {% for d in allfiles %}
 
-    <p>File path:
+    
+    <p>Folder: &nbsp;&nbsp;&nbsp;&nbsp;
         <samp>{{ d.directory }}</samp>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="/cd?id={{ d.id }}">[change]</a>
     </p>
 
     <table class="table table-condensed table-bordered">
@@ -48,8 +62,12 @@ Select the file you want to load in database and press
     {% endfor %}
 
 </form>
+
 <script type="text/javascript">
     $('#myButton').on('click', function () {
         var $btn = $(this).button('loading')
     })
-</script> {% endblock %}
+</script> 
+
+{% endblock %}
+
