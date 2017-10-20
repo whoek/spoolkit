@@ -248,8 +248,9 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
             elif step == GOT_KEY:
                 for sapfile in sapfile_setup:
-                    if sapfile.header_field.lower() in line.lower():
-                        # Found HEADER
+                    # both KEYWORD and HEADER_FIELD must match
+                    if (sapfile.keyword.lower() == status["keyword"]) and \
+                    sapfile.header_field.lower() in line.lower():
                         status["header_field"] = sapfile.header_field.lower()
                         status["linenum_header_field"] = linenum
                         status["table_name"] = sapfile.table_name.lower()
