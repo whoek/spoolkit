@@ -11,12 +11,11 @@
 
     This can also be done via menu: <kbd>Setup</kbd> => <kbd>General Settings</kbd><br>
     The <samp>Key</samp> must be <samp>sapdir</samp><br>
-    The <samp>Value</samp> is the directory where the SAP files are stored<br><br>
+    The <samp>Value</samp> is the folder where the SAP files are stored<br><br>
     
     {% else %}
     Select the file you want to load in database and press
-    <kbd>Load file</kbd><br> 
-    Else click on file name to view sample.<br><br>    
+    <kbd>Load file</kbd> or else click on file to view sample of file.<br><br>    
     <button type="submit" name="1" id="myButton" data-loading-text="Loading..." 
     class="btn btn-primary btn-lg" autocomplete="off">Load file</button>
     {% endif %}
@@ -36,11 +35,11 @@
         <tr>
             <th class="text-center">Load</th>
             <th>File name</th>
-            <th>File date</th>
+            <th class="text-center">File date</th>
             <th class="text-center">File size - MB</th>
-            <th>Key field in file</th>
-            <th>Column field in file</th>
-            <th>DB Table</th>
+            <th class="text-center">Key field in file</th>
+            <th class="text-center">Column field in file</th>
+            <th class="text-center">DB Table</th>
         </tr>
         {% for f in d.files %}
         <tr>
@@ -51,11 +50,11 @@
             <td>
                 <a href="/display_file?filename={{ f.fullfilename }}&keyword={{ f.keyword }}&header_field={{ f.header_field }}&table_name={{ f.table_name }}">{{ f.filename }}</a>
             </td>
-            <td>{{ f.filedate }}</td>
+            <td class="text-center">{{ f.filedate }}</td>
             <td class="text-center">{{ f.filesize }}</td>
-            <td>{{ f.keyword }}</td>
-            <td>{{ f.header_field }}</td>
-            <td>{{ f.table_name }}</td>
+            <td class="text-center">{{ f.keyword }}</td>
+            <td class="text-center">{{ f.header_field }}</td>
+            <td class="text-center">{{ f.table_name }}</td>
         </tr>
         {% endfor %}
     </table>

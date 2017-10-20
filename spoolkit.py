@@ -23,7 +23,11 @@ import webbrowser
 
 DB_FILE = 'sap_spoolkit.db'
 SAP_DIR = 'sapdir'
-VERSION = '0.3'
+DELIMIT = '|'
+MAX_SEARCH = 100    # after __ lines, stop searching for key or header field
+START = 0
+GOT_KEY = 1
+GOT_HEADER = 2
 
 # APP_PATH is where DB should be saved. Same as .py or EXE
 if getattr(sys, 'frozen', False):
@@ -41,6 +45,7 @@ app.config.update(dict(
     SECRET_KEY='F34TF$($e34Q',
     USERNAME='admin',
     PASSWORD='default',
+    VERSION = '0.3',
     APP_PATH=APP_PATH, 
     CWD_PATH=os.getcwd().replace('\\','/'),
 ))
@@ -194,12 +199,8 @@ def ensure_dir(file_path):
         os.makedirs(directory)
 
 def fileload_sqlite(fullfilename, sapfile_setup):
-
-    DELIMIT = '|'
-    MAX_SEARCH = 100    # after __ lines, stop searching for key or header field
-    START = 0
-    GOT_KEY = 1
-    GOT_HEADER = 2
+    """
+    """
     step = START    
 
     status = {}
@@ -220,13 +221,12 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             linenum += 1
             # remove all non-ascii characters
             line = string.replace(line,"\\","").strip()
+
             try:
                 line = line.encode('utf8', 'replace')
                 line = line.encode('ascii', 'replace')
             except:
-                # http://stackoverflow.com/questions/2743070/removing-non-ascii-characters-from-a-string-using-python-django
-                stripped = stripped = (c for c in line if 0 < ord(c) < 127)
-                line = ''.join(stripped)
+                line = ''.join([i if ord(i) < 128 else '#' for i in line])
 
             if step == GOT_HEADER:
                 splitline = string.splitfields(line,DELIMIT)
@@ -249,8 +249,8 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             elif step == GOT_KEY:
                 for sapfile in sapfile_setup:
                     # both KEYWORD and HEADER_FIELD must match
-                    if (sapfile.keyword.lower() == status["keyword"]) and \
-                    sapfile.header_field.lower() in line.lower():
+                    if (sapfile.keyword.lower() == status.get("keyword")) and \
+                    (sapfile.header_field.lower() in line.lower()):
                         status["header_field"] = sapfile.header_field.lower()
                         status["linenum_header_field"] = linenum
                         status["table_name"] = sapfile.table_name.lower()
@@ -274,11 +274,11 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             sql_db = app.config['DATABASE']
             sql_drop = "drop table if exists {};\n\n".format(status["table_name"])
             sql_create = create_sqlite_table(status)
-            sql_import = ".import {}  {} ".format(csvfile, status["table_name"])
+            sql_import = ".import '{}'  '{}' ".format(csvfile, status["table_name"])
             
             # subprocess starting now
             sql_result = subprocess.call(["sqlite3.exe", sql_db, 
-                sql_drop, sql_create, ".separator '\t'",sql_import])  
+                sql_drop, sql_create, ".separator \t",sql_import])  
 
             status["sql_db"] = sql_db
             status["sql_result"] = sql_result
@@ -287,14 +287,16 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             status["sql_import"] = sql_import
 
             try:
-                os.remove(csvfile)
+                pass
+#                os.remove(csvfile)
             except:
                 pass    #else delete it when program start up again
 
             if sql_result == 0:
                 #when done, move the TXT file to archive
-                to_file = status["mypath"] + '/archive/' + time.strftime('%Y_%m_%d') + \
-                    '/' + str(status["myfile"])
+                to_path = status["mypath"] + '/archive/' + time.strftime('%Y_%m_%d')
+                to_file = to_path + '/' + str(status["myfile"])
+                status["to_path"] = to_path
                 ensure_dir(to_file)
                 shutil.move(fullfilename, to_file)
 #                shutil.copy(fullfilename, to_file)
@@ -309,17 +311,34 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
 def fileload_success_message(status):
     message = """
-    <h4>File <samp>{}</samp> loaded in table <samp>{}</samp></h4><br>
-    {:,} lines<br>
-    {} fields<br><br>
-    Key field in file: <samp>{}</samp>   (in line {:,})<br>
-    Column Field in file: <samp>{}</samp> (in line {:,}<br><br> 
-    All done in {:.3f} seconds
-    """.format(status.get("myfile"),status.get("table_name"),
-        int(status.get("linenum_end")), int(status.get("header_fields_count")), 
-        status.get("keyword"), int(status.get("linenum_keyword")),
-        status.get("header_field"), int(status.get("linenum_header_field")), 
-        float(status.get("duration")) )
+    <h4><samp>File {myfile} loaded in table {table_name}</samp></h4><br>
+
+<div class="row">
+    <div class="col-md-2">Rows</div>
+    <div class="col-md-10"><samp>{linenum_end}</samp></div>
+</div>
+<div class="row">
+    <div class="col-md-2">Fields</div>
+    <div class="col-md-10"><samp>{header_fields_count}</samp></div>
+</div>
+<div class="row">
+    <div class="col-md-2">Keyword in line {linenum_keyword}</div>
+    <div class="col-md-10"><samp>{keyword}</samp></div>
+</div>
+
+<div class="row">
+    <div class="col-md-2">Header field in line {linenum_header_field}</div>
+    <div class="col-md-10"><samp>{header_field}</samp></div>
+</div>
+<div class="row">
+    <div class="col-md-2">Moved file to</div>
+    <div class="col-md-10"><samp>{to_path}/</samp></div>
+</div>
+
+<br><div>All done in {:.3} seconds</div>
+{sql_result}
+    
+    """.format(float(status.get("duration")), **status )
     return message
 
 #######################################################################################
@@ -373,7 +392,7 @@ def shutdown():
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
     try:
-        sapfile_setup = SpoolkitSapfiles.query.all()
+        sapfile_setup = SpoolkitSapfiles.query.order_by(SpoolkitSapfiles.id).all()
         sapfile_dir = SpoolkitSettings.query.filter_by(key=SAP_DIR).all()
         allfiles = []
         id = ''
@@ -390,24 +409,54 @@ def loadfiles():
                 t_file["filename"] = f
                 t_file["fullfilename"] = str(os.path.join(mypath, f).replace('\\','/'))
                 t_file["filedate"] = str(time.ctime(getctime(mypath + '/' + f)))
-                t_file["filesize"] = str(os.path.getsize(mypath + '/' + f)/1000000)
-
+                filesize = os.path.getsize(mypath + '/' + f)
+                if filesize < 1000000:
+                    t_file["filesize"] = '<1'
+                else:
+                    t_file["filesize"] = '{:,}'.format( filesize/1000000 ) 
                 # get first 100 lines of file
                 ff = open(mypath + '/' + f,"r")
                 head = [ff.readline() for i in range(100)]    
                 head = str(head).lower()
                 ff.close()
 
-                # check if file is setup.  Add tablename only if both were found
-                for sapfile in sapfile_setup:
-                    pass
-                    if sapfile.keyword.lower() in head:
-                        t_file["keyword"] = sapfile.keyword.lower()
-                    if sapfile.header_field.lower() in head:
-                        t_file["header_field"] = sapfile.header_field.lower()
-                    if ('header_field' in t_file.keys()) and ('keyword' in t_file.keys()):
-                        t_file["table_name"] = sapfile.table_name.lower()
-                        break
+############## LOOK FOR FIELDS - start ##############
+
+                linenum = 0
+                step = START
+                input = file(os.path.abspath(mypath + '/' + f).replace('\\','/'))
+                for line in input.readlines():
+                    linenum += 1
+                    # remove all non-ascii characters
+                    line = string.replace(line,"\\","").strip()
+                    try:
+                        line = line.encode('utf8', 'replace')
+                        line = line.encode('ascii', 'replace')
+                    except:
+                        line = ''.join([i if ord(i) < 128 else '#' for i in line])
+
+                    if step == START:
+                        for sapfile in sapfile_setup:
+                            if sapfile.keyword.lower() in line.lower():     # found KEYWORD                        
+                                t_file["keyword"] = sapfile.keyword.lower()
+                                step = GOT_KEY
+                            elif linenum > MAX_SEARCH:
+                                break
+
+                    elif step == GOT_KEY:
+                        for sapfile in sapfile_setup:
+                            # both KEYWORD and HEADER_FIELD must match
+                            if (sapfile.keyword.lower() == t_file.get("keyword")) and \
+                            (sapfile.header_field.lower() in line.lower()):
+                                t_file["header_field"] = sapfile.header_field.lower()
+                                t_file["table_name"] = sapfile.table_name.lower()
+                                break
+
+                            elif linenum > MAX_SEARCH:
+                                break
+
+############## LOOK FOR FIELDS - end ##############
+
                 t_allfiles.append(t_file)
             t_directory["files"] = t_allfiles
             allfiles.append(t_directory)            
@@ -429,7 +478,7 @@ def file_process():
     Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
     """
     if request.method == 'POST':
-        sapfile_setup = SpoolkitSapfiles.query.all()
+        sapfile_setup = SpoolkitSapfiles.query.order_by(SpoolkitSapfiles.id).all()      
         fullfilename  = request.form.get("fullfilename")
         if fullfilename is None:
             message = Markup("<h4>No file was selected</h4>")
@@ -457,28 +506,37 @@ def display_file():
         filename = request.args.get('filename')
         keyword = request.args.get('keyword')
         header_field = request.args.get('header_field')
-        table_name = request.args.get('table_name')
-        
+        table_name = request.args.get('table_name')        
         input = file(filename)
         linenum = 0
         top100 = ''
+
         for line in input.readlines():
             linenum += 1
-            top100 += '<kbd>{}</kbd> {}<br>'.format(linenum, line)
+            line = string.replace(line,"\\","").strip()
+            try:
+                line = line.encode('utf8', 'replace')
+                line = line.encode('ascii', 'replace')
+            except:
+                line = ''.join([i if ord(i) < 128 else '#' for i in line])
+
+            top100 += '<kbd>{:03d}</kbd> {}<br>'.format(linenum, line)
             if linenum == 100:
                 break
         input.close()
-    except:
-        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+        top100 = Markup(top100)
+    except Exception as e:
+        message = str(e)
+        flash(Markup(message), 'danger')
         return redirect(url_for('loadfiles'))
-    
+
     return render_template('spoolkit_display_file.html',
             filename = filename.replace('/','\\'),
             keyword = keyword,
             header_field = header_field,
             table_name = table_name,
-            top100 = Markup(top100),
-                           )
+            top100 = top100,
+            )
 
 @app.route('/cd', methods=['GET'])
 def change_sap_directory():
@@ -508,8 +566,8 @@ def new_sap_directory():
         flash("ERROR OCCURED -- TRY AGAIN", 'danger')
         return redirect(url_for('loadfiles'))
     return redirect(new_url)
-    
-    
+
+
 ############################################################################
 # SQLAlchemy
 ############################################################################
@@ -581,8 +639,7 @@ db.create_all()
 
 # Add some TEST entries
 rec1 = SpoolkitReports(name='Show date', script='select date()', shortcode='1', is_active=True)
-rec2 = SpoolkitReports(name='Show list of reports', script='select * from spoolkit_reports', shortcode='M2', is_active=True)
-db.session.add_all([rec1, rec2])
+db.session.add_all([rec1])
 db.session.commit()
 
 ############################################################################
@@ -620,19 +677,11 @@ class SapFileView(ModelView):
         post_script='SQL statement that will run AFTER the data was loaded',
         )
 
-#admin = Admin(app, name='Spoolkit', template_mode='bootstrap3', base_template='index2.html')
 # Create admin with custom base template
-admin = Admin(app, 'Datado', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
-
+admin = Admin(app, '', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
-admin.add_view(FileView(name='Load', endpoint='loadfiles', category='SAP Files'))
 admin.add_view(ReportView(SpoolkitReports, db.session, name='Setup', endpoint='setup', category='Reports'))
-admin.add_view(FileView(name='Stats', endpoint='reportstats', category='Reports'))
-admin.add_view(FileView(name='Cache', endpoint='reportcache', category='Reports'))
 admin.add_view(ModelView(SpoolkitSettings, db.session, name='Settings', endpoint='appsettings', category='App'))
-admin.add_view(FileView(name='Check Updates', endpoint='updates', category='App'))
-admin.add_view(FileView(name='Help', endpoint='help', category='App'))
-admin.add_view(FileView(name='Close', endpoint='close', category='App'))
 admin.add_view(ModelView(SpoolkitUsers, db.session))
 
 # Open browser and Run DEV server
