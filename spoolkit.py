@@ -15,7 +15,7 @@ from os.path import isfile, join, getsize, getctime
 import sqlite3
 import string
 import shutil
-import subprocess
+from subprocess import Popen, PIPE
 import sys
 import time
 import timeit
@@ -277,22 +277,25 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             sql_import = ".import '{}'  '{}' ".format(csvfile, status["table_name"])
             
             # subprocess starting now
-            sql_result = subprocess.call(["sqlite3.exe", sql_db, 
-                sql_drop, sql_create, ".mode tabs",sql_import])  
+            sql_list = ["sqlite3.exe", sql_db, sql_drop, sql_create, ".mode tabs",sql_import]
+#            sql_result = subprocess.call(sql_list)
+            p = Popen(sql_list, stdout=PIPE,stderr=PIPE)
+            output, errors = p.communicate()
+            sql_result = p.returncode
 
             status["sql_db"] = sql_db
             status["sql_result"] = sql_result
             status["sql_drop"] = sql_drop
             status["sql_create"] = sql_create
             status["sql_import"] = sql_import
-
+            status["sql_error"] = errors.split('\n', 1)[0]   # first line onle
+            
             try:
                 pass
 #                os.remove(csvfile)
             except:
                 pass    #else delete it when program start up again
-
-            if sql_result == 0:
+            if sql_result == 0 and errors == '':
                 #when done, move the TXT file to archive
                 to_path = status["mypath"] + '/archive/' + time.strftime('%Y_%m_%d')
                 to_file = to_path + '/' + str(status["myfile"])
@@ -303,15 +306,23 @@ def fileload_sqlite(fullfilename, sapfile_setup):
 
     # write summary in a log file and return ID
 
-    except IOError as e:
+    except Exception as e:
         status["error"] = "({})".format(e)
 
     status["duration"] = str(timeit.default_timer() - start_time)
     return status
 
+def fileload_error_message(status):
+    message = """
+    <h4><samp>File {myfile} could not be processed</samp></h4>
+    {sql_error}
+    """.format(**status )
+    return message
+
+
 def fileload_success_message(status):
     message = """
-    <h4><samp>File {myfile} loaded in table {table_name}</samp></h4><br>
+    <h4><samp>File {myfile} loaded in table {table_name}</samp></h4>
 
 <div class="row">
     <div class="col-md-2">Rows</div>
@@ -474,25 +485,38 @@ def file_process():
     """
     Flash Categories: success (green), info (blue), warning (yellow), danger (red) 
     """
-    if request.method == 'POST':
-        sapfile_setup = SpoolkitSapfiles.query.order_by(SpoolkitSapfiles.id).all()      
-        fullfilename  = request.form.get("fullfilename")
-        if fullfilename is None:
-            message = Markup("<h4>No file was selected</h4>")
-            flash(message,'danger')
-        else:
-            status = fileload_sqlite(fullfilename, sapfile_setup)
-            if status.get("sql_result") == 0:
-                message = Markup(fileload_success_message(status))
-                flash(message, 'success')
-#                flash(status, 'success')
+    try:
+        if request.method == 'POST':
+            sapfile_setup = SpoolkitSapfiles.query.order_by(SpoolkitSapfiles.id).all()      
+            fullfilename  = request.form.get("fullfilename")
+            if fullfilename is None:
+                message = Markup("<h4><samp>No file was selected</samp></h4>")
+                flash(message,'warning')
             else:
-                flash(str(status), 'danger')
-        return redirect(url_for('loadfiles'))
-    else:
-        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
-        return redirect(url_for('loadfiles'))
+                status = fileload_sqlite(fullfilename, sapfile_setup)
+                if status.get("sql_result") == 0 and status.get("sql_error") == '':
+                    message = Markup(fileload_success_message(status))
+                    flash(message, 'success')
+                elif status.get("sql_result") == 1:
+                    message = Markup(fileload_error_message(status))
+                    flash(message, 'danger')
+                elif status.get("error") <> '':
+                    message = Markup('WH1 ' + status)
+                    flash(message, 'danger')
+                else:
+                    message = Markup('WH2 ' + status)
+                    flash(message, 'danger')
 
+            return redirect(url_for('loadfiles'))
+        else:
+            message = Markup("<h4><samp>Error occured, please try again</samp></h4>")
+            flash(message, 'danger')
+            return redirect(url_for('loadfiles'))
+
+    except Exception as e:
+        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
+        flash(Markup(message), 'danger')
+        return redirect(url_for('loadfiles'))
 
 @app.route('/display_file', methods=['GET'])
 def display_file():
@@ -523,7 +547,7 @@ def display_file():
         input.close()
         top100 = Markup(top100)
     except Exception as e:
-        message = str(e)
+        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
         flash(Markup(message), 'danger')
         return redirect(url_for('loadfiles'))
 
@@ -543,8 +567,9 @@ def change_sap_directory():
     try:
         id = request.args.get('id')
         new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(id)
-    except:
-        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+    except Exception as e:
+        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
+        flash(message, 'danger')
         return redirect(url_for('loadfiles'))
     return redirect(new_url)
 
@@ -559,8 +584,8 @@ def new_sap_directory():
         db.session.add_all([entry])
         db.session.commit()
         new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(entry.id)
-    except:
-        flash("ERROR OCCURED -- TRY AGAIN", 'danger')
+    except Exception as e:
+        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
         return redirect(url_for('loadfiles'))
     return redirect(new_url)
 
