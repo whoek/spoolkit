@@ -236,7 +236,7 @@ def fileload_sqlite(fullfilename, sapfile_setup):
                     splitline.extend(['' for i in missing*'-'])
                 s = "\t".join(str(x).strip(' \t\n') for x in splitline[0:field_len]) + '\n'
                 csv.write(s)
-
+                
             elif step == START:
                 for sapfile in sapfile_setup:
                     if sapfile.keyword.lower() in line.lower():     # found KEYWORD                        
@@ -278,7 +278,7 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             
             # subprocess starting now
             sql_result = subprocess.call(["sqlite3.exe", sql_db, 
-                sql_drop, sql_create, ".separator \t",sql_import])  
+                sql_drop, sql_create, ".mode tabs",sql_import])  
 
             status["sql_db"] = sql_db
             status["sql_result"] = sql_result
@@ -334,10 +334,7 @@ def fileload_success_message(status):
     <div class="col-md-2">Moved file to</div>
     <div class="col-md-10"><samp>{to_path}/</samp></div>
 </div>
-
-<br><div>All done in {:.3} seconds</div>
-{sql_result}
-    
+<br><div>All done in {:.3} seconds</div>    
     """.format(float(status.get("duration")), **status )
     return message
 
