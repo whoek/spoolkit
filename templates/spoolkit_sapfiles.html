@@ -9,10 +9,6 @@
     <a href="/newdir">Select folder to use</a>
     <br><br><br>
 
-    This can also be done via menu: <kbd>Setup</kbd> => <kbd>General Settings</kbd><br>
-    The <samp>Key</samp> must be <samp>sapdir</samp><br>
-    The <samp>Value</samp> is the folder where the SAP files are stored<br><br>
-    
     {% else %}
     Select the file you want to load in database and press
     <kbd>Load file</kbd> or else click on file to view sample of file.<br><br>    
@@ -21,12 +17,9 @@
     {% endif %}
     
     <br>
-    <br> {% for d in allfiles %}
-
-    
+    <br> {% for d in allfiles %}    
     <p>Folder: &nbsp;&nbsp;&nbsp;&nbsp;
         <samp>{{ d.directory }}</samp>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="/cd?id={{ d.id }}">[change]</a>
     </p>

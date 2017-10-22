@@ -21,7 +21,7 @@ import time
 import timeit
 import webbrowser
 
-DB_FILE = 'sap_spoolkit.db'
+DB_FILE = 'spoolkit.db'
 SAP_DIR = 'sapdir'
 DELIMIT = '|'
 MAX_SEARCH = 100    # after __ lines, stop searching for key or header field
@@ -45,7 +45,7 @@ app.config.update(dict(
     SECRET_KEY='F34TF$($e34Q',
     USERNAME='admin',
     PASSWORD='default',
-    VERSION = '0.3',
+    VERSION = '0.301',
     APP_PATH=APP_PATH, 
     CWD_PATH=os.getcwd().replace('\\','/'),
 ))
@@ -221,7 +221,8 @@ def fileload_sqlite(fullfilename, sapfile_setup):
             linenum += 1
             # remove all non-ascii characters
             line = string.replace(line,"\\","").strip()
-
+            line = string.replace(line,'"','')    # to avoid the 'unescaped " character' issue with sqlite
+            
             try:
                 line = line.encode('utf8', 'replace')
                 line = line.encode('ascii', 'replace')
@@ -357,9 +358,7 @@ def fileload_success_message(status):
 
 @app.route("/")
 def root():
-#    reports = SpoolkitReports.query.all()
     reports = SpoolkitReports.query.filter_by(is_active=1).all()
-    
     return render_template('spoolkit_index.html',
                            reports=reports)
 
@@ -400,6 +399,7 @@ def shutdown():
 @app.route('/loadfiles', methods=['GET'])   
 def loadfiles():
     try:
+        id = ''
         sapfile_setup = SpoolkitSapfiles.query.order_by(SpoolkitSapfiles.id).all()
         sapfile_dir = SpoolkitSettings.query.filter_by(key=SAP_DIR).all()
         allfiles = []
@@ -445,7 +445,7 @@ def loadfiles():
 
                     if step == START:
                         for sapfile in sapfile_setup:
-                            if sapfile.keyword.lower() in line.lower():     # found KEYWORD                        
+                            if sapfile.keyword.lower() in line.lower():     # found KEYWORD 
                                 t_file["keyword"] = sapfile.keyword.lower()
                                 step = GOT_KEY
                             elif linenum > MAX_SEARCH:
@@ -471,7 +471,7 @@ def loadfiles():
     except Exception as e:
         id = id
         new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(id)
-        message = str(e) + '<br><br>Check in <strong>Value</strong> field below if directory is correct<br>'
+        message = 'E474 ' + str(e) + '<br><br>Check in <strong>Value</strong> field below if directory is correct<br>'
         flash(Markup(message), 'danger')
         return redirect(new_url)
 
@@ -497,25 +497,26 @@ def file_process():
                 if status.get("sql_result") == 0 and status.get("sql_error") == '':
                     message = Markup(fileload_success_message(status))
                     flash(message, 'success')
-                elif status.get("sql_result") == 1:
-                    message = Markup(fileload_error_message(status))
+                elif status.get("sql_result") == 1 or \
+                status.get("sql_result") == 0 and  status.get("error") <> '':
+                    message = Markup('E502 ' + fileload_error_message(status))
                     flash(message, 'danger')
                 elif status.get("error") <> '':
-                    message = Markup('WH1 ' + status)
+                    message = Markup('E505 ' + str(status))
                     flash(message, 'danger')
                 else:
-                    message = Markup('WH2 ' + status)
+                    message = Markup('E508  Please Report an Issue')
                     flash(message, 'danger')
 
             return redirect(url_for('loadfiles'))
         else:
-            message = Markup("<h4><samp>Error occured, please try again</samp></h4>")
+            message = Markup("<h4><samp>Error occured, please try again</samp></h4>" + "E512 ")
             flash(message, 'danger')
             return redirect(url_for('loadfiles'))
 
     except Exception as e:
-        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
-        flash(Markup(message), 'danger')
+        message = Markup("<h4><samp>Error occured</samp></h4>" + 'E517 ' + str(e))
+        flash(message, 'danger')
         return redirect(url_for('loadfiles'))
 
 @app.route('/display_file', methods=['GET'])
@@ -547,7 +548,7 @@ def display_file():
         input.close()
         top100 = Markup(top100)
     except Exception as e:
-        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
+        message = Markup("<h4><samp>Error occured</samp></h4>" + 'E550 ' +str(e))
         flash(Markup(message), 'danger')
         return redirect(url_for('loadfiles'))
 
@@ -568,7 +569,7 @@ def change_sap_directory():
         id = request.args.get('id')
         new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(id)
     except Exception as e:
-        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
+        message = Markup("<h4><samp>Error occured</samp></h4>" + 'E571 ' + str(e))
         flash(message, 'danger')
         return redirect(url_for('loadfiles'))
     return redirect(new_url)
@@ -583,9 +584,15 @@ def new_sap_directory():
         entry = SpoolkitSettings(key=SAP_DIR, value='C:\Documents\SAP\SAP GUI')
         db.session.add_all([entry])
         db.session.commit()
+        message = """ In the future, you can access this via <kbd>Setup</kbd>, <kbd>General Settings</kbd><br>
+            The <samp>Key</samp> must be <samp>sapdir</samp><br>
+            The <samp>Value</samp> is the folder where the SAP files are stored<br> """
+        message = Markup(message)
+        flash(message, 'info')   
+#        new_url = '/'.format(entry.id)
         new_url = '/admin/appsettings/edit/?url=%2Fadmin%2Fappsettings%2F&id={}'.format(entry.id)
     except Exception as e:
-        message = Markup("<h4><samp>Error occured</samp></h4>" + str(e))
+        message = Markup("<h4><samp>Error 589</samp></h4>" + str(e))
         return redirect(url_for('loadfiles'))
     return redirect(new_url)
 
@@ -610,10 +617,10 @@ class SpoolkitReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_active = db.Column(db.Boolean, default=True)
     name = db.Column(db.String(60), nullable=False)
+    script = db.Column(db.UnicodeText, nullable=False)
     shortcode = db.Column(db.String(10))
     report_group = db.Column(db.String(10))
     connection = db.Column(db.String(50))
-    script = db.Column(db.UnicodeText, nullable=False)
     cache_duration = db.Column(db.Integer, default=0)
 
 
@@ -637,15 +644,6 @@ class SpoolkitAuthUserPermissioins(db.Model):
     group_id = db.Column(db.Integer)
 
 
-class SpoolkitSapfiles(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    keyword = db.Column(db.String(50), nullable=False)
-    header_field = db.Column(db.String(50), nullable=False)
-    table_name = db.Column(db.String(50), nullable=False)
-    pre_script = db.Column(db.Text)
-    post_script = db.Column(db.Text)
-
-
 class SpoolkitConnections(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_active = db.Column(db.Boolean)
@@ -657,40 +655,53 @@ class SpoolkitConnections(db.Model):
     username = db.Column(db.Text)
     password = db.Column(db.Text)
 
+
+class SpoolkitSapfiles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    keyword = db.Column(db.String(50), nullable=False)
+    header_field = db.Column(db.String(50), nullable=False)
+    table_name = db.Column(db.String(50), nullable=False)
+    pre_script = db.Column(db.Text)
+    post_script = db.Column(db.Text)
+    connection = db.Column(db.Integer())
+
 db.create_all()
 
 # Add some TEST entries
-rec1 = SpoolkitReports(name='Show date', script='select date()', shortcode='1', is_active=True)
-db.session.add_all([rec1])
-db.session.commit()
+#rec1 = SpoolkitReports(name='Show date', script='select date()', shortcode='1', is_active=True)
+#db.session.add_all([rec1])
+#db.session.commit()
 
 ############################################################################
 # flask-admin
 ############################################################################
 
 
-class FileView(BaseView):
-    @expose('/')
-    def index(self):
-#        return self.render('spoolkit_demo.html')
-        return self.render('spoolkit_base.html')
-
 class ReportView(ModelView):
     column_editable_list = ['is_active', 'name']
     column_display_pk = True
+    page_size = 100    # the number of entries to display on the list view
     column_exclude_list = ('report_group', 'connection', 'cache_duration','shortcode')
     column_labels = dict(id='ID', is_active='Active', name='Report name', 
         shortcode='Shortcode',script='Report contents',
         )
     column_descriptions = dict(
         script='Report contents can either be --text or --sql',
-        shortcode='Quick access of reports [DEACTIVE]',
-        cache_duration='Time in seconds before report will be recalculated [DEACTIVE]',
+        shortcode='Quick access of reports [BETA]',
+        cache_duration='Time in seconds before report will be recalculated [BETA]',
         )
+    form_excluded_columns = ['report_group', 'connection', 'shortcode', 'cache_duration']
+    form_widget_args = {
+        'script': {'rows': 20,'style': 'font-family:monospace;'}
+    }
+
 
 class SapFileView(ModelView):
     column_display_pk = True
     column_editable_list = ['keyword', 'header_field','table_name']
+    page_size = 100    # the number of entries to display on the list view
+    column_exclude_list = ('connection')    
+    form_excluded_columns = ['connection']
     column_descriptions = dict(
         keyword='Field in file to uniquely identify type of file',
         header_field='Field in file to identify the field names',
@@ -698,15 +709,28 @@ class SapFileView(ModelView):
         pre_script='SQL statement that will run BEFORE the data is loaded',
         post_script='SQL statement that will run AFTER the data was loaded',
         )
+    form_widget_args = {
+        'keyword': {'style': 'font-family:monospace;'},
+        'header_field': {'style': 'font-family:monospace;'},
+        'table_name': {'style': 'font-family:monospace;'},
+        'pre_script': {'rows': 3,'style': 'font-family:monospace;'},
+        'post_script': {'rows': 3,'style': 'font-family:monospace;'},
+    }
+
+class SpoolkitSettingsView(ModelView):
+    form_widget_args = {
+        'key': {'style': 'font-family:monospace;'},
+        'value': {'style': 'font-family:monospace;'},
+    }
 
 # Create admin with custom base template
 admin = Admin(app, '', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(ReportView(SpoolkitReports, db.session, name='Setup', endpoint='setup', category='Reports'))
-admin.add_view(ModelView(SpoolkitSettings, db.session, name='Settings', endpoint='appsettings', category='App'))
-admin.add_view(ModelView(SpoolkitUsers, db.session))
+admin.add_view(SpoolkitSettingsView(SpoolkitSettings, db.session, name='Settings', endpoint='appsettings', category='App'))
 
 # Open browser and Run DEV server
 if __name__ == "__main__":
     webbrowser.open('http://localhost:9119/', new=2)
     app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
+#    app.run(port=9119, host='0.0.0.0', debug=False, use_reloader=False)

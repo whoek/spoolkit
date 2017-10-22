@@ -1,17 +1,13 @@
 {% extends "spoolkit_base.html" %}
 
 {% block body %}
-<h3>Reports
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<small><a href="/admin/setup/">[edit]</a></small>
-</h3>
+<h3>Reports</h3>
 
 <samp>
   {% for report in reports %}
   {{ report.id }}. <a href=/r/{{ report.id }}>{{ report.name }}</a><br>
   {% else %}
-      <em>Unbelievable.  No entries here so far</em>
+      <em>No entries here so far. Create via Setup, Build Reports </em><br>
   {% endfor %}
 </samp>
 

@@ -49,7 +49,7 @@
       <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
           </button>
-          <a class="navbar-brand" href="http://sap123.com">Neon</a>
+          <a class="navbar-brand" href="http://sap123.com">Spoolkit {{ config.VERSION }}</a>
         </div>
   
               
@@ -67,16 +67,10 @@
       </div>
       <!-- End of navbar -->
     
-
-
-
-
-
-
   <div class="col-md-10">
     <div id="content" class="row">
       {% block brand %}
-      <h2 id="brand">{{ admin_view.name|capitalize }}</h2>
+      <h3 id="brand">{{ admin_view.name|capitalize }}</h3>
       {% endblock %} {{ layout.messages() }} {% set render_ctx = h.resolve_ctx() %} {% block body %}{% endblock %}
     </div>
   </div>
