@@ -724,7 +724,7 @@ class SpoolkitSettingsView(ModelView):
     }
 
 # Create admin with custom base template
-admin = Admin(app, '', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
+admin = Admin(app, ' ', base_template='spoolkit_admin_layout.html', template_mode='bootstrap3')
 admin.add_view(SapFileView(SpoolkitSapfiles, db.session, name='Define format', endpoint='filesetup', category='SAP Files'))
 admin.add_view(ReportView(SpoolkitReports, db.session, name='Setup', endpoint='setup', category='Reports'))
 admin.add_view(SpoolkitSettingsView(SpoolkitSettings, db.session, name='Settings', endpoint='appsettings', category='App'))
