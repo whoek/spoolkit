@@ -732,5 +732,5 @@ admin.add_view(SpoolkitSettingsView(SpoolkitSettings, db.session, name='Settings
 # Open browser and Run DEV server
 if __name__ == "__main__":
     webbrowser.open('http://localhost:9119/', new=2)
-    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
-#    app.run(port=9119, host='0.0.0.0', debug=False, use_reloader=False)
+#    app.run(port=9119, host='0.0.0.0', debug=True, use_reloader=True)
+    app.run(port=9119, host='0.0.0.0', debug=False, use_reloader=False)
