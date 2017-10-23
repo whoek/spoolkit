@@ -703,8 +703,8 @@ class SapFileView(ModelView):
     column_exclude_list = ('connection')    
     form_excluded_columns = ['connection']
     column_descriptions = dict(
-        keyword='Field in file to uniquely identify type of file',
-        header_field='Field in file to identify the field names',
+        keyword='Field in file to uniquely identify type of file. This is not case sensitive.',
+        header_field='Field in file to identify the field names. This is not case sensitive.',
         table_name='Database table name where data will be loaded',
         pre_script='SQL statement that will run BEFORE the data is loaded',
         post_script='SQL statement that will run AFTER the data was loaded',

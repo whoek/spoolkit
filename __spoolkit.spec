@@ -68,6 +68,7 @@ exe = EXE(pyz,
           name='spoolkit',
           debug=False,
           strip=False,
+          icon='C:\\data\\bitbucket\\spoolkit\\s.ico',
           upx=True,
           runtime_tmpdir=None,
           console=True )
